@@ -1,0 +1,15 @@
+{
+  "name": "webpack-bundle-diff",
+  "version": "0.1.0",
+  "description": "Understand changes in webpack bundle size",
+  "main": "./lib/index.js",
+  "typings": "./lib/index.d.ts",
+  "scripts": {
+    "build": "tsc"
+  },
+  "author": "Scott Mikula <mikula@gmail.com>",
+  "devDependencies": {
+    "typescript": "~3.1.6"
+  },
+  "license": "MIT"
+}
