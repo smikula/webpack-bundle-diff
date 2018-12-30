@@ -1,4 +1,6 @@
 import * as commander from 'commander';
+import readJson from './util/readJson';
+import { Stats } from './types/Stats';
 
 // Read the package version from package.json
 const packageVersion = require('../package').version;
@@ -10,9 +12,12 @@ program
     .command('data <stats>')
     .description('derive bundle data from stats')
     .option('-o, --outFile <string>', 'output file')
-    .action((stats, options) => {
+    .action((statsPath, options) => {
         console.log('Deriving bundle data from stats...');
-        console.log(stats, options);
+        readJson(statsPath).then((stats: Stats) => {
+            debugger;
+            console.log(stats);
+        });
     });
 
 program
@@ -26,6 +31,3 @@ program
 
 // Execute the command line
 program.parse(process.argv);
-
-// Indicate success or failure via the exit code
-process.exitCode = 0;
