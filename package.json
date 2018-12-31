@@ -10,7 +10,7 @@
   },
   "scripts": {
     "build": "tsc",
-    "debug": "yarn build && node --inspect-brk --max-old-space-size=12288 lib/cli.js data sampledata/stats.json"
+    "debug": "yarn build && node --inspect-brk --max-old-space-size=12288 lib/cli.js data sampledata/stats.json -o sampledata/bundledata.json"
   },
   "author": "Scott Mikula <mikula@gmail.com>",
   "dependencies": {

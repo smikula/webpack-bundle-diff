@@ -1,6 +1,8 @@
 import * as commander from 'commander';
+import * as fs from 'fs';
 import readJson from './util/readJson';
 import { Stats } from './types/Stats';
+import { deriveBundleData } from './api/deriveBundleData';
 
 // Read the package version from package.json
 const packageVersion = require('../package').version;
@@ -16,7 +18,8 @@ program
         console.log('Deriving bundle data from stats...');
         readJson(statsPath).then((stats: Stats) => {
             debugger;
-            console.log(stats);
+            const bundleData = deriveBundleData(stats);
+            fs.writeFileSync(options.outFile, JSON.stringify(bundleData, null, 2));
         });
     });
 

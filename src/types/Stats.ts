@@ -2,6 +2,7 @@
 export interface Stats {
     assets: Asset[];
     chunks: Chunk[];
+    modules: Module[];
 }
 
 export interface Asset {
@@ -16,10 +17,18 @@ export interface Chunk {
 }
 
 export interface Module {
+    chunks: ChunkId[];
     id: string;
+    modules?: Module[];
     name: string;
+    reasons: Reason[];
     size: number;
-    modules: Module[];
+}
+
+export interface Reason {
+    moduleId: string;
+    type: string;
+    userRequest: string;
 }
 
 export type ChunkId = number | string;

@@ -1,1 +1,1 @@
-export { createBundleData } from './createBundleData';
+export { deriveBundleData } from './api/deriveBundleData';
