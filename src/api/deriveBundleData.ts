@@ -10,38 +10,41 @@ export function deriveBundleData(stats: Stats): BundleData {
 function generateGraph(stats: Stats): ModuleGraph {
     let graph: ModuleGraph = {};
     for (let m of stats.modules) {
-        addModuleToGraph(m, graph);
+        addPrimaryModuleToGraph(m, graph);
     }
 
     return graph;
 }
 
-export function addModuleToGraph(newModule: Module, graph: ModuleGraph) {
+export function addPrimaryModuleToGraph(primaryModule: Module, graph: ModuleGraph) {
     // Ensure there are no duplicate entries
-    if (graph[newModule.id]) {
-        throw new Error(`Module already exists in graph: ${newModule.id}`);
+    if (graph[primaryModule.id]) {
+        throw new Error(`Module already exists in graph: ${primaryModule.id}`);
     }
 
     // Add the node for the primary module
-    graph[newModule.id] = {
-        parents: newModule.reasons.map(r => r.moduleId),
-        containsHoistedModules: !!newModule.modules,
-        chunks: newModule.chunks,
-        size: newModule.size,
+    graph[primaryModule.id] = {
+        parents: primaryModule.reasons.map(r => r.moduleId),
+        containsHoistedModules: !!primaryModule.modules,
+        chunks: primaryModule.chunks,
+        size: primaryModule.size,
     };
 
-    // Add entries for submodules if  any
-    if (newModule.modules) {
-        newModule.modules.forEach(m2 => {
-            // The primary module is already accounted for, so don't treat it as a submodule
-            if (m2.name == newModule.id) {
-                // The original size included all the hoisted modules, so update it to just be the single module
-                graph[newModule.id].size = m2.size;
-                return;
-            }
+    // Add entries for modules that have been hoisted into this module, if any
+    if (primaryModule.modules) {
+        addHoistedModulesToGraph(primaryModule, graph);
+    }
+}
 
+export function addHoistedModulesToGraph(primaryModule: Module, graph: ModuleGraph) {
+    for (let hoistedModule of primaryModule.modules) {
+        // The primary module is already accounted for, so don't treat it as a hoisted module
+        if (hoistedModule.name == primaryModule.id) {
+            // The original size included all the hoisted modules, so update it to just be the single module
+            graph[primaryModule.id].size = hoistedModule.size;
+        } else {
             // Scope-hoisted modules don't have an ID, but the name is functionally equivalent here
-            let submoduleId = m2.name;
+            let submoduleId = hoistedModule.name;
 
             // Assert that there are no duplicate entries
             if (graph[submoduleId]) {
@@ -50,11 +53,10 @@ export function addModuleToGraph(newModule: Module, graph: ModuleGraph) {
 
             // Add the node for the submodule
             graph[submoduleId] = {
-                parents: [newModule.id],
-                isHoisted: true,
-                chunks: newModule.chunks,
-                size: newModule.size,
+                parents: [primaryModule.id],
+                chunks: primaryModule.chunks,
+                size: hoistedModule.size,
             };
-        });
+        }
     }
 }
