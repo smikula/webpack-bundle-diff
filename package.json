@@ -10,7 +10,8 @@
   },
   "scripts": {
     "build": "tsc",
-    "debug": "yarn build && node --inspect-brk --max-old-space-size=12288 lib/cli.js data sampledata/stats.json -o sampledata/bundledata.json"
+    "debug": "yarn build && node --inspect-brk --max-old-space-size=12288 lib/cli.js data sampledata/stats.json -o sampledata/bundledata.json",
+    "test": "jest"
   },
   "author": "Scott Mikula <mikula@gmail.com>",
   "dependencies": {
@@ -21,7 +22,10 @@
   },
   "devDependencies": {
     "@types/commander": "^2.12.2",
+    "@types/jest": "^23.3.11",
     "@types/node": "^10.12.18",
+    "jest": "^23.6.0",
+    "ts-jest": "^23.10.5",
     "typescript": "~3.1.6"
   },
   "repository": {
