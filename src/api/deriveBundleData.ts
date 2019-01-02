@@ -24,7 +24,7 @@ export function addPrimaryModuleToGraph(primaryModule: Module, graph: ModuleGrap
 
     // Add the node for the primary module
     graph[primaryModule.id] = {
-        parents: primaryModule.reasons.map(r => r.moduleId),
+        parents: primaryModule.reasons.map(r => r.moduleId).filter(p => p != null),
         containsHoistedModules: !!primaryModule.modules,
         chunks: primaryModule.chunks,
         size: primaryModule.size,
