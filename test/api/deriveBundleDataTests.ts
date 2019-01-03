@@ -1,4 +1,8 @@
-import { addPrimaryModuleToGraph, addHoistedModulesToGraph } from '../../src/api/deriveBundleData';
+import {
+    addPrimaryModuleToGraph,
+    addHoistedModulesToGraph,
+    getParents,
+} from '../../src/api/deriveBundleData';
 
 describe('addPrimaryModuleToGraph', () => {
     it('creates and adds a node for the module', () => {
@@ -97,5 +101,40 @@ describe('addHoistedModulesToGraph', () => {
         expect(() => {
             addHoistedModulesToGraph(primaryModule, graph);
         }).toThrow();
+    });
+});
+
+describe('getParents', () => {
+    it('returns the module IDs from the reasons', () => {
+        // Arrange
+        const reasons: any = [{ moduleId: 'a' }, { moduleId: 'b' }, { moduleId: 'c' }];
+
+        // Act
+        const parents = getParents(reasons);
+
+        // Assert
+        expect(parents).toEqual(['a', 'b', 'c']);
+    });
+
+    it('filters out nulls', () => {
+        // Arrange
+        const reasons: any = [{ moduleId: 'a' }, { moduleId: null }, { moduleId: 'c' }];
+
+        // Act
+        const parents = getParents(reasons);
+
+        // Assert
+        expect(parents).toEqual(['a', 'c']);
+    });
+
+    it('filters out duplicates', () => {
+        // Arrange
+        const reasons: any = [{ moduleId: 'a' }, { moduleId: 'a' }, { moduleId: 'a' }];
+
+        // Act
+        const parents = getParents(reasons);
+
+        // Assert
+        expect(parents).toEqual(['a']);
     });
 });

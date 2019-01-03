@@ -1,5 +1,5 @@
 import { BundleData, ModuleGraph } from '../types/BundleData';
-import { Stats, Module } from '../types/Stats';
+import { Stats, Module, Reason } from '../types/Stats';
 
 export function deriveBundleData(stats: Stats): BundleData {
     return {
@@ -24,7 +24,7 @@ export function addPrimaryModuleToGraph(primaryModule: Module, graph: ModuleGrap
 
     // Add the node for the primary module
     graph[primaryModule.id] = {
-        parents: primaryModule.reasons.map(r => r.moduleId).filter(p => p != null),
+        parents: getParents(primaryModule.reasons),
         containsHoistedModules: !!primaryModule.modules,
         chunks: primaryModule.chunks,
         size: primaryModule.size,
@@ -59,4 +59,11 @@ export function addHoistedModulesToGraph(primaryModule: Module, graph: ModuleGra
             };
         }
     }
+}
+
+export function getParents(reasons: Reason[]) {
+    // 1) Start with the module ID for each reason
+    // 2) Filter out nulls (this happens for entry point modules)
+    // 3) Filter out duplicates (this happens due to scope hoisting)
+    return [...new Set(reasons.map(r => r.moduleId).filter(p => p != null))];
 }
