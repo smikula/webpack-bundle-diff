@@ -12,6 +12,7 @@ export interface ModuleGraphNode {
     chunks: ChunkId[];
     containsHoistedModules?: boolean;
     isHoisted?: boolean;
+    name: string;
     parents: string[];
     size: number;
 }

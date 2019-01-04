@@ -18,7 +18,8 @@ export interface Chunk {
 
 export interface Module {
     chunks: ChunkId[];
-    id: string;
+    id: string | number;
+    identifier: string;
     modules?: Module[];
     name: string;
     reasons: Reason[];
@@ -26,7 +27,7 @@ export interface Module {
 }
 
 export interface Reason {
-    moduleId: string;
+    moduleId: string | number;
     type: string;
     userRequest: string;
 }

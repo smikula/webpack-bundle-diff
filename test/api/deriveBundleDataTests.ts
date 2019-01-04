@@ -1,140 +1,143 @@
-import {
-    addPrimaryModuleToGraph,
-    addHoistedModulesToGraph,
-    getParents,
-} from '../../src/api/deriveBundleData';
+import { processModule, getParents } from '../../src/api/deriveBundleData';
 
-describe('addPrimaryModuleToGraph', () => {
-    it('creates and adds a node for the module', () => {
+const moduleNameMap = new Map([[1, 'module1'], [2, 'module2'], [3, 'module3']]);
+
+describe('processModule', () => {
+    it('skips ignored modules', () => {
         // Arrange
-        const id = 'testId';
         const graph: any = {};
+        const module: any = { identifier: 'ignored module1' };
 
-        const primaryModule: any = {
-            id,
+        // Act
+        processModule(module, graph, moduleNameMap);
+
+        // Assert
+        expect(graph).toEqual({});
+    });
+
+    it('adds individual modules', () => {
+        // Arrange
+        const graph: any = {};
+        const module: any = {
+            id: 1,
+            identifier: 'module1',
+            name: 'module1',
             reasons: [],
             chunks: [1, 2, 3],
             size: 123,
         };
 
         // Act
-        addPrimaryModuleToGraph(primaryModule, graph);
+        processModule(module, graph, moduleNameMap);
 
         // Assert
-        expect(graph[id]).toEqual({
+        expect(graph[module.name]).toEqual({
+            name: 'module1',
             parents: [],
-            containsHoistedModules: false,
             chunks: [1, 2, 3],
             size: 123,
         });
     });
 
-    it('throws when adding a duplicate node', () => {
-        // Arrange
-        const id = 'testId';
-        const graph: any = { [id]: {} };
-        const primaryModule: any = { id };
-
-        // Act / Assert
-        expect(() => {
-            addPrimaryModuleToGraph(primaryModule, graph);
-        }).toThrow();
-    });
-});
-
-describe('addHoistedModulesToGraph', () => {
-    it('creates and adds nodes for the modules', () => {
+    it('for hoisted modules, treats the first as primary', () => {
         // Arrange
         const graph: any = {};
-        const id = 'testId';
-        const primaryModule: any = {
-            id,
-            chunks: ['chunk1'],
-            modules: [{ name: 'hoisted1', size: 123 }, { name: 'hoisted2', size: 456 }],
+        const module: any = {
+            identifier: 'testId',
+            name: 'module1 + N other modules',
+            reasons: [],
+            chunks: [1, 2, 3],
+            size: 123,
+            modules: [{ name: 'module1', size: 456 }],
         };
 
         // Act
-        addHoistedModulesToGraph(primaryModule, graph);
+        processModule(module, graph, moduleNameMap);
 
         // Assert
-        expect(graph).toEqual({
-            hoisted1: {
-                parents: [id],
-                chunks: ['chunk1'],
-                size: 123,
-            },
-            hoisted2: {
-                parents: [id],
-                chunks: ['chunk1'],
-                size: 456,
-            },
+        expect(graph['module1']).toEqual({
+            name: 'module1',
+            parents: [],
+            containsHoistedModules: true,
+            chunks: [1, 2, 3],
+            size: 456,
         });
     });
 
-    it('updates the size for the primary module', () => {
+    it('adds subsequent hoisted modules as children of the first', () => {
         // Arrange
-        const id = 'testId';
-        const graph: any = { [id]: { size: 123 } };
-        const primaryModule: any = {
-            id,
-            modules: [{ name: id, size: 456 }],
+        const graph: any = {};
+        const module: any = {
+            identifier: 'testId',
+            name: 'module1 + N other modules',
+            reasons: [],
+            chunks: [1, 2, 3],
+            size: 123,
+            modules: [{ name: 'module1', size: 456 }, { name: 'module2', size: 789 }],
         };
 
         // Act
-        addHoistedModulesToGraph(primaryModule, graph);
+        processModule(module, graph, moduleNameMap);
 
         // Assert
-        expect(graph[id].size).toBe(456);
+        expect(graph['module2']).toEqual({
+            name: 'module2',
+            parents: ['module1'],
+            chunks: [1, 2, 3],
+            size: 789,
+        });
     });
 
     it('throws when adding a duplicate node', () => {
         // Arrange
-        const id1 = 'testId1';
-        const id2 = 'testId2';
-        const graph: any = { [id1]: { size: 123 } };
-        const primaryModule: any = {
-            id2,
-            modules: [{ name: id1 }],
+        const graph: any = { module1: {} };
+        const module: any = {
+            id: 1,
+            identifier: 'module1',
+            name: 'module1',
+            reasons: [],
+            chunks: [],
+            size: 0,
         };
 
         // Act / Assert
         expect(() => {
-            addHoistedModulesToGraph(primaryModule, graph);
+            processModule(module, graph, moduleNameMap);
         }).toThrow();
     });
 });
 
 describe('getParents', () => {
-    it('returns the module IDs from the reasons', () => {
+    it('gets the modules from the reasons array and maps them to module names', () => {
         // Arrange
-        const reasons: any = [{ moduleId: 'a' }, { moduleId: 'b' }, { moduleId: 'c' }];
+        const reasons: any = [{ moduleId: 1 }, { moduleId: 2 }, { moduleId: 3 }];
 
         // Act
-        const parents = getParents(reasons);
+        const parents = getParents(reasons, moduleNameMap);
 
         // Assert
-        expect(parents).toEqual(['a', 'b', 'c']);
+        expect(parents).toEqual(['module1', 'module2', 'module3']);
     });
 
     it('filters out nulls', () => {
         // Arrange
-        const reasons: any = [{ moduleId: 'a' }, { moduleId: null }, { moduleId: 'c' }];
+        const reasons: any = [{ moduleId: 1 }, { moduleId: null }, { moduleId: 3 }];
 
         // Act
-        const parents = getParents(reasons);
+        const parents = getParents(reasons, moduleNameMap);
 
         // Assert
-        expect(parents).toEqual(['a', 'c']);
+        expect(parents).toEqual(['module1', 'module3']);
     });
 
     it('filters out duplicates', () => {
         // Arrange
-        const reasons: any = [{ moduleId: 'a' }, { moduleId: 'a' }, { moduleId: 'a' }];
+        const reasons: any = [{ moduleId: 1 }, { moduleId: 1 }, { moduleId: 1 }];
 
         // Act
-        const parents = getParents(reasons);
+        const parents = getParents(reasons, moduleNameMap);
 
         // Assert
-        expect(parents).toEqual(['a']);
+        expect(parents).toEqual(['module1']);
     });
 });
