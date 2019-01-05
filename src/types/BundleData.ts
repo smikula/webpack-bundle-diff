@@ -1,5 +1,3 @@
-import { ChunkId } from './Stats';
-
 export interface BundleData {
     graph: ModuleGraph;
 }
@@ -9,9 +7,8 @@ export interface ModuleGraph {
 }
 
 export interface ModuleGraphNode {
-    chunks: ChunkId[];
+    namedChunkGroups: string[];
     containsHoistedModules?: boolean;
-    isHoisted?: boolean;
     name: string;
     parents: string[];
     size: number;

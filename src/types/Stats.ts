@@ -3,6 +3,7 @@ export interface Stats {
     assets: Asset[];
     chunks: Chunk[];
     modules: Module[];
+    namedChunkGroups: { [name: string]: NamedChunkGroup };
 }
 
 export interface Asset {
@@ -30,6 +31,11 @@ export interface Reason {
     moduleId: string | number;
     type: string;
     userRequest: string;
+}
+
+export interface NamedChunkGroup {
+    assets: string[];
+    chunks: ChunkId[];
 }
 
 export type ChunkId = number | string;

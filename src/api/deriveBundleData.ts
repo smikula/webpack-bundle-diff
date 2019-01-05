@@ -1,5 +1,6 @@
 import { BundleData, ModuleGraph, ModuleGraphNode } from '../types/BundleData';
 import { Stats, Module, Reason } from '../types/Stats';
+import NamedChunkGroupLookupMap from './NamedChunkGroupLookupMap';
 
 type ModuleNameMap = Map<string | number, string>;
 
@@ -11,28 +12,38 @@ export function deriveBundleData(stats: Stats): BundleData {
 
 function generateGraph(stats: Stats): ModuleGraph {
     const moduleNameMap = createModuleNameMap(stats);
+    const ncgLookup = new NamedChunkGroupLookupMap(stats);
+
     let graph: ModuleGraph = {};
 
     for (let module of stats.modules) {
-        processModule(module, graph, moduleNameMap);
+        processModule(module, graph, moduleNameMap, ncgLookup);
     }
 
     return graph;
 }
 
-export function processModule(module: Module, graph: ModuleGraph, moduleNameMap: ModuleNameMap) {
+export function processModule(
+    module: Module,
+    graph: ModuleGraph,
+    moduleNameMap: ModuleNameMap,
+    ncgLookup: NamedChunkGroupLookupMap
+) {
     // Modules marked as ignored don't get bundled, so we can ignore them too
     if (module.identifier.startsWith('ignored ')) {
         console.log(`Ignoring module '${module.identifier}'`);
         return;
     }
 
+    // Precalculate named chunk groups since they are the same for all submodules
+    const namedChunkGroups = ncgLookup.getNamedChunkGroups(module.chunks);
+
     if (!module.modules) {
         // This is just an individual module, so we can add it to the graph as-is
         addModuleToGraph(graph, {
             name: module.name,
             parents: getParents(module.reasons, moduleNameMap),
-            chunks: module.chunks,
+            namedChunkGroups,
             size: module.size,
         });
     } else {
@@ -45,7 +56,7 @@ export function processModule(module: Module, graph: ModuleGraph, moduleNameMap:
             name: primaryModule.name,
             parents: getParents(module.reasons, moduleNameMap),
             containsHoistedModules: true,
-            chunks: module.chunks,
+            namedChunkGroups,
             size: primaryModule.size,
         });
 
@@ -55,7 +66,7 @@ export function processModule(module: Module, graph: ModuleGraph, moduleNameMap:
             addModuleToGraph(graph, {
                 name: hoistedModule.name,
                 parents: [primaryModule.name],
-                chunks: module.chunks,
+                namedChunkGroups,
                 size: hoistedModule.size,
             });
         }
