@@ -3,6 +3,7 @@ import * as fs from 'fs';
 import readJson from './util/readJson';
 import { Stats } from './types/Stats';
 import { deriveBundleData } from './api/deriveBundleData';
+import { diff } from './api/diff';
 
 // Read the package version from package.json
 const packageVersion = require('../package').version;
@@ -27,9 +28,12 @@ program
     .command('diff <baseline> <comparison>')
     .description('diff bundles')
     .option('-o, --outFile <string>', 'output file')
-    .action((baseline, comparison, options) => {
+    .action((baselinePath, comparisonPath, options) => {
         console.log('Diffing bundles...');
-        console.log(baseline, comparison, options);
+        Promise.all([readJson(baselinePath), readJson(comparisonPath)]).then(data => {
+            debugger;
+            diff(data[0], data[1]);
+        });
     });
 
 // Execute the command line
