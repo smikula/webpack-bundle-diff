@@ -3,7 +3,7 @@ import * as fs from 'fs';
 import readJson from './util/readJson';
 import { Stats } from './types/Stats';
 import { deriveBundleData } from './api/deriveBundleData';
-import { diff } from './api/diff';
+import { diff } from './api/diff/diff';
 
 // Read the package version from package.json
 const packageVersion = require('../package').version;
@@ -32,7 +32,8 @@ program
         console.log('Diffing bundles...');
         Promise.all([readJson(baselinePath), readJson(comparisonPath)]).then(data => {
             debugger;
-            diff(data[0], data[1]);
+            let result = diff(data[0], data[1]);
+            fs.writeFileSync(options.outFile, JSON.stringify(result, null, 2));
         });
     });
 
