@@ -2,7 +2,7 @@ import * as commander from 'commander';
 import * as fs from 'fs';
 import readJson from './util/readJson';
 import { Stats } from './types/Stats';
-import { deriveBundleData } from './api/deriveBundleData';
+import { deriveBundleData } from './api/deriveBundleData/deriveBundleData';
 import { diff } from './api/diff/diff';
 
 // Read the package version from package.json

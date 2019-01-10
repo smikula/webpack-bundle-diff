@@ -1,6 +1,6 @@
 import { BundleData } from '../../types/BundleData';
 import { Stats } from '../../types/Stats';
-import { deriveBundleData } from '../deriveBundleData';
+import { deriveBundleData } from '../deriveBundleData/deriveBundleData';
 import diffGraph from './diffGraph';
 
 export function diff(baseline: BundleData | Stats, comparison: BundleData | Stats) {

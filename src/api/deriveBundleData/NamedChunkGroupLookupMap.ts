@@ -1,4 +1,4 @@
-import { Stats, ChunkId } from '../types/Stats';
+import { Stats, ChunkId } from '../../types/Stats';
 
 // Helper class to look up what named chunk groups a given chunk is in
 export default class NamedChunkGroupLookupMap {
