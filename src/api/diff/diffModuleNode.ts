@@ -1,17 +1,18 @@
-import { ModuleGraph, ModuleGraphNode } from '../../types/BundleData';
+import { ModuleGraphNode } from '../../types/BundleData';
 import { DiffResults } from '../../types/DiffResults';
 import handleAddedModule from './handleAddedModule';
 import handleChangedModule from './handleChangedModule';
 import handleRemovedModule from './handleRemovedModule';
+import { EnhancedModuleGraph } from './EnhancedModuleGraph';
 
 export default function diffModuleNode(
-    baselineGraph: ModuleGraph,
-    comparisonGraph: ModuleGraph,
+    baselineGraph: EnhancedModuleGraph,
+    comparisonGraph: EnhancedModuleGraph,
     moduleName: string,
     results: DiffResults
 ) {
-    const baselineModule = baselineGraph[moduleName];
-    const comparisonModule = comparisonGraph[moduleName];
+    const baselineModule = baselineGraph.getModule(moduleName);
+    const comparisonModule = comparisonGraph.getModule(moduleName);
     const baselineChunkGroups = getNamedChunkGroups(baselineModule);
     const comparisonChunkGroups = getNamedChunkGroups(comparisonModule);
     const allChunkGroups = new Set([...baselineChunkGroups, ...comparisonChunkGroups]);

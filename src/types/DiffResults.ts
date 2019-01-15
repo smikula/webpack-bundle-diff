@@ -14,6 +14,14 @@ export interface ChunkGroupDiff {
 export interface ModuleDiff {
     module: string;
     parents: string[];
+    weight: ImportWeight;
+}
+
+// Information about the impact of a particular module import
+export interface ImportWeight {
+    moduleCount: number;
+    size: number;
+    modules: string[];
 }
 
 // Information about a module whose size changed

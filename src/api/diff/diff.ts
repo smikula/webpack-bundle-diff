@@ -2,6 +2,7 @@ import { BundleData } from '../../types/BundleData';
 import { Stats } from '../../types/Stats';
 import { deriveBundleData } from '../deriveBundleData/deriveBundleData';
 import diffGraph from './diffGraph';
+import { EnhancedModuleGraph } from './EnhancedModuleGraph';
 
 export function diff(baseline: BundleData | Stats, comparison: BundleData | Stats) {
     // Derive bundle data if necessary
@@ -9,7 +10,11 @@ export function diff(baseline: BundleData | Stats, comparison: BundleData | Stat
     comparison = getBundleData(comparison);
 
     // Diff the graph
-    let results = diffGraph(baseline.graph, comparison.graph);
+    let results = diffGraph(
+        new EnhancedModuleGraph(baseline.graph),
+        new EnhancedModuleGraph(comparison.graph)
+    );
+
     return results;
 }
 

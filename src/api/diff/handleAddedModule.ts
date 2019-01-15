@@ -1,11 +1,13 @@
-import { ModuleGraph, ModuleGraphNode } from '../../types/BundleData';
+import { ModuleGraphNode } from '../../types/BundleData';
 import { ChunkGroupDiff } from '../../types/DiffResults';
 import filterToChunkGroup from './filterToChunkGroup';
+import { EnhancedModuleGraph } from './EnhancedModuleGraph';
+import { getAddedWeight } from './getWeight';
 
 export default function handleAddedModule(
     moduleName: string,
-    baselineGraph: ModuleGraph,
-    comparisonGraph: ModuleGraph,
+    baselineGraph: EnhancedModuleGraph,
+    comparisonGraph: EnhancedModuleGraph,
     comparisonModule: ModuleGraphNode,
     chunkGroupName: string,
     chunkGroupDiff: ChunkGroupDiff
@@ -27,11 +29,12 @@ export default function handleAddedModule(
         chunkGroupDiff.added.push({
             module: moduleName,
             parents: [],
+            weight: getAddedWeight(moduleName, baselineGraph, comparisonGraph, chunkGroupName),
         });
     } else {
         // We're only interested in parents that were previously in this chunk group
-        const previouslyExistingParents = comparisonParents.filter(
-            p => baselineGraph[p] && baselineGraph[p].namedChunkGroups.indexOf(chunkGroupName) >= 0
+        const previouslyExistingParents = comparisonParents.filter(p =>
+            baselineGraph.hasModule(p, chunkGroupName)
         );
 
         // Only report this addition if it was imported from some module that was previously in the chunk group
@@ -39,6 +42,7 @@ export default function handleAddedModule(
             chunkGroupDiff.added.push({
                 module: moduleName,
                 parents: previouslyExistingParents,
+                weight: getAddedWeight(moduleName, baselineGraph, comparisonGraph, chunkGroupName),
             });
         }
     }

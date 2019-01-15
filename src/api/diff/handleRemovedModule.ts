@@ -1,11 +1,13 @@
-import { ModuleGraph, ModuleGraphNode } from '../../types/BundleData';
+import { ModuleGraphNode } from '../../types/BundleData';
 import { ChunkGroupDiff } from '../../types/DiffResults';
 import filterToChunkGroup from './filterToChunkGroup';
+import { EnhancedModuleGraph } from './EnhancedModuleGraph';
+import { getRemovedWeight } from './getWeight';
 
 export default function handleRemovedModule(
     moduleName: string,
-    baselineGraph: ModuleGraph,
-    comparisonGraph: ModuleGraph,
+    baselineGraph: EnhancedModuleGraph,
+    comparisonGraph: EnhancedModuleGraph,
     baselineModule: ModuleGraphNode,
     chunkGroupName: string,
     chunkGroupDiff: ChunkGroupDiff
@@ -27,13 +29,12 @@ export default function handleRemovedModule(
         chunkGroupDiff.removed.push({
             module: moduleName,
             parents: [],
+            weight: getRemovedWeight(moduleName, baselineGraph, comparisonGraph, chunkGroupName),
         });
     } else {
         // We're only interested in parents that are still in this chunk group
-        const stillExistingParents = baselineParents.filter(
-            p =>
-                comparisonGraph[p] &&
-                comparisonGraph[p].namedChunkGroups.indexOf(chunkGroupName) >= 0
+        const stillExistingParents = baselineParents.filter(p =>
+            comparisonGraph.hasModule(p, chunkGroupName)
         );
 
         // Only report this removal if it was imported from some module that is still in the chunk group
@@ -41,6 +42,12 @@ export default function handleRemovedModule(
             chunkGroupDiff.removed.push({
                 module: moduleName,
                 parents: stillExistingParents,
+                weight: getRemovedWeight(
+                    moduleName,
+                    baselineGraph,
+                    comparisonGraph,
+                    chunkGroupName
+                ),
             });
         }
     }
