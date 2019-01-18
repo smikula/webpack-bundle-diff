@@ -30,7 +30,6 @@ export function processModule(
 ) {
     // Modules marked as ignored don't get bundled, so we can ignore them too
     if (module.identifier.startsWith('ignored ')) {
-        console.log(`Ignoring module '${module.identifier}'`);
         return;
     }
 
