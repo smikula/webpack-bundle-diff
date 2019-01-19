@@ -5,7 +5,6 @@ export function generateReport(diff: DiffResults) {
 
     for (let chunkGroupName of Object.keys(diff)) {
         reportChunkGroup(chunkGroupName, diff[chunkGroupName], lines);
-        lines.push('');
     }
 
     return lines.join('\n');
@@ -54,4 +53,6 @@ function reportChunkGroup(chunkGroupName: string, chunkGroupDiff: ChunkGroupDiff
     if (count) {
         lines.push(`|△|*${count} modules with minor changes*| |${netDelta}|`);
     }
+
+    lines.push('');
 }
