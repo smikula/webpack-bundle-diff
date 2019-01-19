@@ -1,6 +1,7 @@
-import { processModule, getParents } from '../../src/api/deriveBundleData';
+import { processModule, getParents } from '../../src/api/deriveBundleData/deriveBundleData';
 
-const moduleNameMap = new Map([[1, 'module1'], [2, 'module2'], [3, 'module3']]);
+const moduleIdToNameMap: any = new Map([[1, 'module1'], [2, 'module2'], [3, 'module3']]);
+const namedChunkGroupLookupMap: any = { getNamedChunkGroups: () => ['chunkGroup1'] };
 
 describe('processModule', () => {
     it('skips ignored modules', () => {
@@ -9,7 +10,7 @@ describe('processModule', () => {
         const module: any = { identifier: 'ignored module1' };
 
         // Act
-        processModule(module, graph, moduleNameMap);
+        processModule(module, graph, moduleIdToNameMap, namedChunkGroupLookupMap);
 
         // Assert
         expect(graph).toEqual({});
@@ -28,13 +29,13 @@ describe('processModule', () => {
         };
 
         // Act
-        processModule(module, graph, moduleNameMap);
+        processModule(module, graph, moduleIdToNameMap, namedChunkGroupLookupMap);
 
         // Assert
         expect(graph[module.name]).toEqual({
             name: 'module1',
             parents: [],
-            chunks: [1, 2, 3],
+            namedChunkGroups: ['chunkGroup1'],
             size: 123,
         });
     });
@@ -52,14 +53,14 @@ describe('processModule', () => {
         };
 
         // Act
-        processModule(module, graph, moduleNameMap);
+        processModule(module, graph, moduleIdToNameMap, namedChunkGroupLookupMap);
 
         // Assert
         expect(graph['module1']).toEqual({
             name: 'module1',
             parents: [],
             containsHoistedModules: true,
-            chunks: [1, 2, 3],
+            namedChunkGroups: ['chunkGroup1'],
             size: 456,
         });
     });
@@ -77,13 +78,13 @@ describe('processModule', () => {
         };
 
         // Act
-        processModule(module, graph, moduleNameMap);
+        processModule(module, graph, moduleIdToNameMap, namedChunkGroupLookupMap);
 
         // Assert
         expect(graph['module2']).toEqual({
             name: 'module2',
             parents: ['module1'],
-            chunks: [1, 2, 3],
+            namedChunkGroups: ['chunkGroup1'],
             size: 789,
         });
     });
@@ -102,7 +103,7 @@ describe('processModule', () => {
 
         // Act / Assert
         expect(() => {
-            processModule(module, graph, moduleNameMap);
+            processModule(module, graph, moduleIdToNameMap, namedChunkGroupLookupMap);
         }).toThrow();
     });
 });
@@ -113,7 +114,7 @@ describe('getParents', () => {
         const reasons: any = [{ moduleId: 1 }, { moduleId: 2 }, { moduleId: 3 }];
 
         // Act
-        const parents = getParents(reasons, moduleNameMap);
+        const parents = getParents(reasons, moduleIdToNameMap);
 
         // Assert
         expect(parents).toEqual(['module1', 'module2', 'module3']);
@@ -124,7 +125,7 @@ describe('getParents', () => {
         const reasons: any = [{ moduleId: 1 }, { moduleId: null }, { moduleId: 3 }];
 
         // Act
-        const parents = getParents(reasons, moduleNameMap);
+        const parents = getParents(reasons, moduleIdToNameMap);
 
         // Assert
         expect(parents).toEqual(['module1', 'module3']);
@@ -135,7 +136,7 @@ describe('getParents', () => {
         const reasons: any = [{ moduleId: 1 }, { moduleId: 1 }, { moduleId: 1 }];
 
         // Act
-        const parents = getParents(reasons, moduleNameMap);
+        const parents = getParents(reasons, moduleIdToNameMap);
 
         // Assert
         expect(parents).toEqual(['module1']);
