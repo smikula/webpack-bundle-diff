@@ -1,4 +1,4 @@
-import { processModule, getParents } from '../../src/api/deriveBundleData/deriveBundleData';
+import { processModule, getParents } from '../../src/api/deriveBundleData/deriveGraph';
 
 const moduleIdToNameMap: any = new Map([[1, 'module1'], [2, 'module2'], [3, 'module3']]);
 const namedChunkGroupLookupMap: any = { getNamedChunkGroups: () => ['chunkGroup1'] };
