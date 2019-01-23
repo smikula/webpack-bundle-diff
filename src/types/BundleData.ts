@@ -1,5 +1,6 @@
 export interface BundleData {
     graph: ModuleGraph;
+    chunkGroups: ChunkGroupData;
 }
 
 export interface ModuleGraph {
@@ -12,4 +13,14 @@ export interface ModuleGraphNode {
     name: string;
     parents: string[];
     size: number;
+}
+
+export interface ChunkGroupData {
+    [chunkGroupName: string]: ChunkGroupRecord;
+}
+
+export interface ChunkGroupRecord {
+    size: number;
+    assets: string[];
+    ignoredAssets: string[];
 }
