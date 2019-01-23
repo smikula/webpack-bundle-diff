@@ -52,7 +52,7 @@ function getNamedChunkGroups(module: ModuleGraphNode) {
 // Get the ChunkGroupDiff for a given chunk group, creating it if necessary
 function getChunkGroupDiff(results: DiffResults, chunkGroupName: string) {
     if (!results[chunkGroupName]) {
-        results[chunkGroupName] = { added: [], removed: [], changed: [] };
+        results[chunkGroupName] = { delta: 0, added: [], removed: [], changed: [] };
     }
 
     return results[chunkGroupName];

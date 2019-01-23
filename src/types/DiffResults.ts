@@ -5,6 +5,7 @@ export interface DiffResults {
 
 // Diff of a particular chunk group
 export interface ChunkGroupDiff {
+    delta: number;
     added: ModuleDiff[];
     removed: ModuleDiff[];
     changed: ModuleDelta[];
