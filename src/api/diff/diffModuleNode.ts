@@ -19,7 +19,7 @@ export default function diffModuleNode(
 
     // Check whether this module was added, removed, or changed within each chunk group
     for (let chunkGroupName of allChunkGroups) {
-        let chunkGroupDiff = getChunkGroupDiff(results, chunkGroupName);
+        let chunkGroupDiff = results[chunkGroupName];
         if (!baselineChunkGroups.has(chunkGroupName)) {
             handleAddedModule(
                 moduleName,
@@ -47,13 +47,4 @@ export default function diffModuleNode(
 // Get the set of named chunk groups for a module, accounting for null
 function getNamedChunkGroups(module: ModuleGraphNode) {
     return new Set((module && module.namedChunkGroups) || []);
-}
-
-// Get the ChunkGroupDiff for a given chunk group, creating it if necessary
-function getChunkGroupDiff(results: DiffResults, chunkGroupName: string) {
-    if (!results[chunkGroupName]) {
-        results[chunkGroupName] = { delta: 0, added: [], removed: [], changed: [] };
-    }
-
-    return results[chunkGroupName];
 }
