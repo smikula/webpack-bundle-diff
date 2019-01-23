@@ -20,7 +20,7 @@ function reportChunkGroup(chunkGroupName: string, chunkGroupDiff: ChunkGroupDiff
         return;
     }
 
-    lines.push(`## ${chunkGroupName}`);
+    lines.push(`## ${chunkGroupName} (${formatDelta(chunkGroupDiff.delta)} bytes)`);
 
     // Header
     lines.push('|| Module | Count | Size |');
@@ -28,13 +28,17 @@ function reportChunkGroup(chunkGroupName: string, chunkGroupDiff: ChunkGroupDiff
 
     for (const moduleDiff of chunkGroupDiff.added) {
         lines.push(
-            `|+|${moduleDiff.module}|${moduleDiff.weight.moduleCount}|${moduleDiff.weight.size}|`
+            `|+|${moduleDiff.module}|${moduleDiff.weight.moduleCount}|${formatDelta(
+                moduleDiff.weight.size
+            )}|`
         );
     }
 
     for (const moduleDiff of chunkGroupDiff.removed) {
         lines.push(
-            `|-|${moduleDiff.module}|${moduleDiff.weight.moduleCount}|${moduleDiff.weight.size}|`
+            `|-|${moduleDiff.module}|${moduleDiff.weight.moduleCount}|${formatDelta(
+                -moduleDiff.weight.size
+            )}|`
         );
     }
 
@@ -46,13 +50,17 @@ function reportChunkGroup(chunkGroupName: string, chunkGroupDiff: ChunkGroupDiff
             count++;
             netDelta += moduleDelta.delta;
         } else {
-            lines.push(`|△|${moduleDelta.module}| |${moduleDelta.delta}|`);
+            lines.push(`|△|${moduleDelta.module}| |${formatDelta(moduleDelta.delta)}|`);
         }
     }
 
     if (count) {
-        lines.push(`|△|*${count} modules with minor changes*| |${netDelta}|`);
+        lines.push(`|△|*${count} modules with minor changes*| |${formatDelta(netDelta)}|`);
     }
 
     lines.push('');
+}
+
+function formatDelta(delta: number) {
+    return (delta >= 0 ? '+' : '') + delta.toLocaleString();
 }

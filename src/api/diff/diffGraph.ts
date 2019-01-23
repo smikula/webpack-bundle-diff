@@ -4,10 +4,9 @@ import { EnhancedModuleGraph } from './EnhancedModuleGraph';
 
 export default function diffGraph(
     baselineGraph: EnhancedModuleGraph,
-    comparisonGraph: EnhancedModuleGraph
+    comparisonGraph: EnhancedModuleGraph,
+    results: DiffResults
 ) {
-    const results: DiffResults = {};
-
     // Compare each module (the union of modules from both graphs)
     const allModules = new Set([
         ...baselineGraph.getAllModuleNames(),
@@ -17,6 +16,4 @@ export default function diffGraph(
     for (let moduleName of allModules) {
         diffModuleNode(baselineGraph, comparisonGraph, moduleName, results);
     }
-
-    return results;
 }
