@@ -52,3 +52,24 @@ import { diff, generateReport } from 'webpack-bundle-diff';
 let diff = diff(stats1, stats2);
 let report = generateReport(diff);
 ```
+
+## Understanding the bundle diff report
+
+In order to make sense of the bundle diff, you need to understand webpack's concept of a *chunk group*.  Every entry point or code split point defines a chunk group, which is effectively the set of JavaScript that needs to be evaluated when that code point is loaded.  (Chunk groups can be *named*, either by using named entry points or supplying a magic comment inside a dynamic import.)  A chunk group may consist of multiple JS files, so the "size" of a chunk group is considered the sum of its JS file sizes.  (Some JS files may be shared between chunk groups, so it is not always necessary to load the full amount when loading a chunk group.)
+
+The diff report has an entry for each named chunk group, excluding those that have no changes.  The size delta for that chunk group is reported in the heading, followed by a table with details about what modules changes in that chunk group.
+
+> **main (+1,284 bytes)**
+> || Module | Count | Size |
+> |-|-|-|-|
+> |+|./A.js|6|+2,341|
+> |+|./B.js|8|+3,229|
+> |-|./C.js|3|-872|
+> |△|./D.js||+437|
+> |△|*5 modules with minor changes*| |+36|
+
+* The first column of the table indicates whether modules were added (+), removed (-), or changed (△).  Modules with only minor changes (possibly due to internal webpack heuristics) are aggregated together in the last row of the table.
+* One module may cause a whole subgraph of dependencies to get included in the bundle.  The *Count* indicates how many modules were included due to this module.
+* *Size* is the total change in size due to this module and any dependencies it brings in.
+
+Note that the size delta for the chunk group as a whole does not correspond directly to the sizes reported in the table.  The delta reported for the chunk group is based on the final size on disk, possibly including minification.  (Individual module sizes are pre-minification.)  Additionally, the numbers in the table may account for overlappping modules.  For example, in the example above A.js brings in 6 modules and B.js brings in 8 modules; but some of those modules may be shared between them and thus counted twice.
