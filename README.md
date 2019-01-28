@@ -60,6 +60,7 @@ In order to make sense of the bundle diff, you need to understand webpack's conc
 The diff report has an entry for each named chunk group, excluding those that have no changes.  The size delta for that chunk group is reported in the heading, followed by a table with details about what modules changes in that chunk group.
 
 > **main (+1,284 bytes)**
+>
 > || Module | Count | Size |
 > |-|-|-|-|
 > |+|./A.js|6|+2,341|
