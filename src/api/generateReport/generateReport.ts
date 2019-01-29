@@ -1,16 +1,30 @@
 import { DiffResults, ChunkGroupDiff } from '../../types/DiffResults';
+import { ReportOptions, ModuleNameTransform } from '../../types/ReportOptions';
 
-export function generateReport(diff: DiffResults) {
+export function generateReport(diff: DiffResults, options?: ReportOptions) {
     const lines: string[] = [];
+    const chunkGroups = (options && options.chunkGroups) || Object.keys(diff);
+    const transform = (options && options.moduleNameTransform) || (name => name);
 
-    for (let chunkGroupName of Object.keys(diff)) {
-        reportChunkGroup(chunkGroupName, diff[chunkGroupName], lines);
+    for (let chunkGroupName of chunkGroups) {
+        if (diff[chunkGroupName]) {
+            reportChunkGroup(chunkGroupName, diff[chunkGroupName], lines, transform);
+        }
+    }
+
+    if (!lines.length) {
+        return '## No changes to report';
     }
 
     return lines.join('\n');
 }
 
-function reportChunkGroup(chunkGroupName: string, chunkGroupDiff: ChunkGroupDiff, lines: string[]) {
+function reportChunkGroup(
+    chunkGroupName: string,
+    chunkGroupDiff: ChunkGroupDiff,
+    lines: string[],
+    transform: ModuleNameTransform
+) {
     // If there are no changes in the chunk group, don't report it
     if (
         !chunkGroupDiff.added.length &&
@@ -21,14 +35,15 @@ function reportChunkGroup(chunkGroupName: string, chunkGroupDiff: ChunkGroupDiff
     }
 
     lines.push(`## ${chunkGroupName} (${formatDelta(chunkGroupDiff.delta)} bytes)`);
+    lines.push('');
 
     // Header
     lines.push('|| Module | Count | Size |');
-    lines.push('|-|-|-|-|-|');
+    lines.push('|-|-|-|-|');
 
     for (const moduleDiff of chunkGroupDiff.added) {
         lines.push(
-            `|+|${moduleDiff.module}|${moduleDiff.weight.moduleCount}|${formatDelta(
+            `|+|${transform(moduleDiff.module)}|${moduleDiff.weight.moduleCount}|${formatDelta(
                 moduleDiff.weight.size
             )}|`
         );
@@ -36,7 +51,7 @@ function reportChunkGroup(chunkGroupName: string, chunkGroupDiff: ChunkGroupDiff
 
     for (const moduleDiff of chunkGroupDiff.removed) {
         lines.push(
-            `|-|${moduleDiff.module}|${moduleDiff.weight.moduleCount}|${formatDelta(
+            `|-|${transform(moduleDiff.module)}|${moduleDiff.weight.moduleCount}|${formatDelta(
                 -moduleDiff.weight.size
             )}|`
         );
@@ -50,7 +65,7 @@ function reportChunkGroup(chunkGroupName: string, chunkGroupDiff: ChunkGroupDiff
             count++;
             netDelta += moduleDelta.delta;
         } else {
-            lines.push(`|△|${moduleDelta.module}| |${formatDelta(moduleDelta.delta)}|`);
+            lines.push(`|△|${transform(moduleDelta.module)}| |${formatDelta(moduleDelta.delta)}|`);
         }
     }
 
