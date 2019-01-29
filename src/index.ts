@@ -3,3 +3,4 @@ export { diff } from './api/diff/diff';
 export { generateReport } from './api/generateReport/generateReport';
 export * from './types/BundleData';
 export * from './types/DiffResults';
+export * from './types/ReportOptions';
