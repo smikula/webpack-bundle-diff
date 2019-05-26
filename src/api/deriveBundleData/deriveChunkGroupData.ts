@@ -15,8 +15,8 @@ export function deriveChunkGroupData(stats: Stats) {
 
         // Process each asset in the chunk group
         for (let asset of chunkGroup.assets) {
-            // Source maps don't count towards size
-            if (asset.endsWith('.map')) {
+            // Source maps and css don't count towards size
+            if (asset.endsWith('.map') || asset.endsWith('.css')) {
                 ignoredAssets.push(asset);
             } else {
                 assets.push(asset);

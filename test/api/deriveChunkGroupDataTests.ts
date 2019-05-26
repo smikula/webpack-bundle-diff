@@ -58,4 +58,22 @@ describe('deriveChunkGroupData', () => {
             chunkGroup1: { size: 1, assets: ['asset1.js'], ignoredAssets: ['asset1.js.map'] },
         });
     });
+
+    it('ignores css assets', () => {
+        // Arrange
+        const stats: any = {
+            namedChunkGroups: {
+                chunkGroup1: { assets: ['asset1.js', 'asset1.css'] },
+            },
+            assets,
+        }
+
+        // Act
+        const chunkGroupData = deriveChunkGroupData(stats);
+
+        // Assert
+        expect(chunkGroupData).toEqual({
+            chunkGroup1: { size: 1, assets: ['asset1.js'], ignoredAssets: ['asset1.css'] }
+        })
+    })
 });
