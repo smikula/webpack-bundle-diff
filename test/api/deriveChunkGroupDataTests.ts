@@ -41,7 +41,7 @@ describe('deriveChunkGroupData', () => {
         });
     });
 
-    it('ignores sourcemap assets', () => {
+    it('ignores sourcemap assets by default', () => {
         // Arrange
         const stats: any = {
             namedChunkGroups: {
@@ -56,6 +56,30 @@ describe('deriveChunkGroupData', () => {
         // Assert
         expect(chunkGroupData).toEqual({
             chunkGroup1: { size: 1, assets: ['asset1.js'], ignoredAssets: ['asset1.js.map'] },
+        });
+    });
+
+    it('respects the assetFilter option', () => {
+        // Arrange
+        const stats: any = {
+            namedChunkGroups: {
+                chunkGroup1: { assets: ['asset1.js', 'asset1.bad'] },
+            },
+            assets,
+        };
+
+        const assetFilter = (asset: string) => !asset.endsWith('.bad');
+
+        // Act
+        const chunkGroupData = deriveChunkGroupData(stats, { assetFilter });
+
+        // Assert
+        expect(chunkGroupData).toEqual({
+            chunkGroup1: {
+                size: 1,
+                assets: ['asset1.js'],
+                ignoredAssets: ['asset1.bad'],
+            },
         });
     });
 });
