@@ -14,7 +14,7 @@ describe('deriveChunkGroupData', () => {
         };
 
         // Act
-        const chunkGroupData = deriveChunkGroupData(stats);
+        const chunkGroupData = deriveChunkGroupData(stats, null);
 
         // Assert
         expect(chunkGroupData).toEqual({
@@ -33,7 +33,7 @@ describe('deriveChunkGroupData', () => {
         };
 
         // Act
-        const chunkGroupData = deriveChunkGroupData(stats);
+        const chunkGroupData = deriveChunkGroupData(stats, null);
 
         // Assert
         expect(chunkGroupData).toEqual({
@@ -51,7 +51,7 @@ describe('deriveChunkGroupData', () => {
         };
 
         // Act
-        const chunkGroupData = deriveChunkGroupData(stats);
+        const chunkGroupData = deriveChunkGroupData(stats, null);
 
         // Assert
         expect(chunkGroupData).toEqual({
