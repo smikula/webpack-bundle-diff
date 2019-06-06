@@ -4,11 +4,16 @@ import { deriveBundleData } from '../deriveBundleData/deriveBundleData';
 import diffGraph from './diffGraph';
 import { EnhancedModuleGraph } from './EnhancedModuleGraph';
 import diffChunkGroups from './diffChunkGroups';
+import { DataOptions } from '../../types/DataOptions';
 
-export function diff(baseline: BundleData | Stats, comparison: BundleData | Stats) {
+export function diff(
+    baseline: BundleData | Stats,
+    comparison: BundleData | Stats,
+    options?: DataOptions
+) {
     // Derive bundle data if necessary
-    baseline = getBundleData(baseline);
-    comparison = getBundleData(comparison);
+    baseline = getBundleData(baseline, options);
+    comparison = getBundleData(comparison, options);
 
     // Diff named chunk groups
     const results = diffChunkGroups(baseline, comparison);
@@ -23,6 +28,6 @@ export function diff(baseline: BundleData | Stats, comparison: BundleData | Stat
     return results;
 }
 
-function getBundleData(data: BundleData | Stats): BundleData {
-    return (<BundleData>data).graph ? <BundleData>data : deriveBundleData(<Stats>data);
+function getBundleData(data: BundleData | Stats, options: DataOptions): BundleData {
+    return (<BundleData>data).graph ? <BundleData>data : deriveBundleData(<Stats>data, options);
 }
