@@ -1,7 +1,9 @@
 import { Stats } from '../../types/Stats';
 import { ChunkGroupData } from '../../types/BundleData';
+import { DataOptions } from '../../types/DataOptions';
 
-export function deriveChunkGroupData(stats: Stats) {
+export function deriveChunkGroupData(stats: Stats, options: DataOptions) {
+    const assetFilter = (options && options.assetFilter) || defaultAssetFilter;
     const chunkGroupData: ChunkGroupData = {};
     const assetSizeMap = getAssetSizeMap(stats);
 
@@ -15,8 +17,7 @@ export function deriveChunkGroupData(stats: Stats) {
 
         // Process each asset in the chunk group
         for (let asset of chunkGroup.assets) {
-            // Source maps don't count towards size
-            if (asset.endsWith('.map')) {
+            if (!assetFilter(asset)) {
                 ignoredAssets.push(asset);
             } else {
                 assets.push(asset);
@@ -39,4 +40,9 @@ function getAssetSizeMap(stats: Stats) {
     }
 
     return assetSizeMap;
+}
+
+// By default filter out source maps since they don't count towards bundle size
+function defaultAssetFilter(asset: string) {
+    return !asset.endsWith('.map');
 }
