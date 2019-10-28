@@ -27,10 +27,10 @@
   "devDependencies": {
     "@types/commander": "^2.12.2",
     "@types/event-stream": "^3.3.34",
-    "@types/jest": "^23.3.11",
+    "@types/jest": "^24.0.20",
     "@types/node": "^10.12.18",
-    "jest": "^23.6.0",
-    "ts-jest": "^23.10.5",
+    "jest": "^24.9.0",
+    "ts-jest": "^24.1.0",
     "typescript": "~3.1.6"
   },
   "repository": {
