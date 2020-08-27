@@ -5,10 +5,11 @@ export function generateReport(diff: DiffResults, options?: ReportOptions) {
     const lines: string[] = [];
     const chunkGroups = (options && options.chunkGroups) || Object.keys(diff);
     const transform = (options && options.moduleNameTransform) || (name => name);
+    const threshold = (options && options.threshold) || 100;
 
     for (let chunkGroupName of chunkGroups) {
         if (diff[chunkGroupName]) {
-            reportChunkGroup(chunkGroupName, diff[chunkGroupName], lines, transform);
+            reportChunkGroup(chunkGroupName, diff[chunkGroupName], lines, transform, threshold);
         }
     }
 
@@ -23,7 +24,8 @@ function reportChunkGroup(
     chunkGroupName: string,
     chunkGroupDiff: ChunkGroupDiff,
     lines: string[],
-    transform: ModuleNameTransform
+    transform: ModuleNameTransform,
+    threshold: number
 ) {
     // If there are no changes in the chunk group, don't report it
     if (
@@ -57,11 +59,10 @@ function reportChunkGroup(
         );
     }
 
-    const THRESHOLD = 100;
     let count = 0;
     let netDelta = 0;
     for (const moduleDelta of chunkGroupDiff.changed) {
-        if (Math.abs(moduleDelta.delta) < THRESHOLD) {
+        if (Math.abs(moduleDelta.delta) < threshold) {
             count++;
             netDelta += moduleDelta.delta;
         } else {
