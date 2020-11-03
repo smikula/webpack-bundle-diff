@@ -4,7 +4,7 @@ export interface BundleData {
 }
 
 export interface ModuleGraph {
-    [id: string]: ModuleGraphNode;
+    [id: string]: ModuleGraphNodex;
 }
 
 export interface ModuleGraphNode {
