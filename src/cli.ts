@@ -23,14 +23,16 @@ program
     });
 
 program
-    .command('diff <baseline> <comparison>')
-    .description('diff bundles')
+    .command('report <diff>')
+    .description('generate a markdown report from a diff')
     .option('-o, --outFile <string>', 'output file')
-    .action((baselinePath, comparisonPath, options) => {
-        console.log('Diffing bundles...');
-        Promise.all([readJson(baselinePath), readJson(comparisonPath)]).then(data => {
-            let result = diff(data[0], data[1]);
-            fs.writeFileSync(options.outFile, JSON.stringify(result, null, 2));
+    .option('-t, --threshold <int>', 'threshold to minor changes')
+    .action((diffPath, options) => {
+        console.log('Generating report...');
+        readJson(diffPath).then((diff: DiffResults) => {
+            const markdown = generateReport(diff);
+            const markdown = generateReport(diff, {threshold});
+            fs.writeFileSync(options.outFile, markdown);
         });
     });
 
