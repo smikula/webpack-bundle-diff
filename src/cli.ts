@@ -38,10 +38,11 @@ program
     .command('report <diff>')
     .description('generate a markdown report from a diff')
     .option('-o, --outFile <string>', 'output file')
+    .option('-t, --threshold <int>', 'threshold to minor changes')
     .action((diffPath, options) => {
         console.log('Generating report...');
         readJson(diffPath).then((diff: DiffResults) => {
-            const markdown = generateReport(diff);
+            const markdown = generateReport(diff, {threshold: options.threshold});
             fs.writeFileSync(options.outFile, markdown);
         });
     });
