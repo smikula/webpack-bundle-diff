@@ -81,8 +81,12 @@ export function getParents(reasons: Reason[], moduleIdToNameMap: ModuleIdToNameM
 
 function addModuleToGraph(graph: ModuleGraph, moduleNode: ModuleGraphNode) {
     if (graph[moduleNode.name]) {
-        throw new Error(`Module already exists in graph: ${moduleNode.name}`);
+        const graphNode = graph[moduleNode.name];
+        graphNode.parents = [...new Set([...graphNode.parents, ...moduleNode.parents])];
+        graphNode.namedChunkGroups = [
+            ...new Set([...graphNode.namedChunkGroups, ...moduleNode.namedChunkGroups]),
+        ];
+    } else {
+        graph[moduleNode.name] = moduleNode;
     }
-
-    graph[moduleNode.name] = moduleNode;
 }
