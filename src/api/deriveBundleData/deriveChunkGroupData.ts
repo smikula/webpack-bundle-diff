@@ -1,34 +1,55 @@
-import { Stats } from '../../types/Stats';
+import { Asset, ChunkAsset, Stats } from '../../types/Stats';
 import { ChunkGroupData } from '../../types/BundleData';
 import { DataOptions } from '../../types/DataOptions';
 
 export function deriveChunkGroupData(stats: Stats, options: DataOptions) {
     const assetFilter = (options && options.assetFilter) || defaultAssetFilter;
     const chunkGroupData: ChunkGroupData = {};
-    const assetSizeMap = getAssetSizeMap(stats);
+
+    const getProcessedAsset = getAssetProcessor(stats);
 
     // Process each named chunk group
     for (let chunkGroupName of Object.keys(stats.namedChunkGroups)) {
         const chunkGroup = stats.namedChunkGroups[chunkGroupName];
 
-        let size = 0;
+        let chunkGroupSize = 0;
         let assets: string[] = [];
         let ignoredAssets: string[] = [];
 
         // Process each asset in the chunk group
         for (let asset of chunkGroup.assets) {
-            if (!assetFilter(asset)) {
-                ignoredAssets.push(asset);
+            const { name, size} = getProcessedAsset(asset);
+            if (!assetFilter(name)) {
+                ignoredAssets.push(name);
             } else {
-                assets.push(asset);
-                size += assetSizeMap.get(asset);
+                assets.push(name);
+                chunkGroupSize += size;
             }
         }
 
-        chunkGroupData[chunkGroupName] = { size, assets, ignoredAssets };
+        chunkGroupData[chunkGroupName] = { size: chunkGroupSize, assets, ignoredAssets };
     }
 
     return chunkGroupData;
+}
+
+function getAssetProcessor(stats: Stats): (asset: ChunkAsset) => Pick<Asset, 'name' | 'size'> {
+    if (
+        Object.values(stats.namedChunkGroups).some(({ assets }) =>
+            assets.some(a => typeof a === 'object' && 'size' in a)
+        )
+    ) {
+        // In webpack 5, the chunkGroup assets are objects with name and size properties
+        return (asset: ChunkAsset) => asset as Pick<Asset, 'name' | 'size'>;
+    } else {
+        // In webpack 4 and earlier, chunkGroup assets are simply strings
+        const assetSizeMap = getAssetSizeMap(stats);
+        
+        return (asset: ChunkAsset) => ({
+            name: asset as string,
+            size: assetSizeMap.get(asset as string)
+        })
+    }
 }
 
 // Create a map of asset name -> asset size
