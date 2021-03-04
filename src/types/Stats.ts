@@ -33,8 +33,10 @@ export interface Reason {
     userRequest: string;
 }
 
+export type ChunkAsset = Pick<Asset, 'name' | 'size'>
+
 export interface NamedChunkGroup {
-    assets: string[];
+    assets: ChunkAsset[];
     chunks: ChunkId[];
 }
 

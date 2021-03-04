@@ -1,5 +1,6 @@
 import { ModuleGraph, ModuleGraphNode } from '../../types/BundleData';
 import { Stats, Module, Reason } from '../../types/Stats';
+import { arrayUnion } from '../../util/arrayUnion';
 import ModuleIdToNameMap from './ModuleIdToNameMap';
 import NamedChunkGroupLookupMap from './NamedChunkGroupLookupMap';
 
@@ -81,8 +82,13 @@ export function getParents(reasons: Reason[], moduleIdToNameMap: ModuleIdToNameM
 
 function addModuleToGraph(graph: ModuleGraph, moduleNode: ModuleGraphNode) {
     if (graph[moduleNode.name]) {
-        throw new Error(`Module already exists in graph: ${moduleNode.name}`);
+        const graphNode = graph[moduleNode.name];
+        graphNode.parents = arrayUnion(graphNode.parents, moduleNode.parents);
+        graphNode.namedChunkGroups = arrayUnion(
+            graphNode.namedChunkGroups,
+            moduleNode.namedChunkGroups
+        );
+    } else {
+        graph[moduleNode.name] = moduleNode;
     }
-
-    graph[moduleNode.name] = moduleNode;
 }

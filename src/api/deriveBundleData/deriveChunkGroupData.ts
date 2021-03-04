@@ -5,41 +5,29 @@ import { DataOptions } from '../../types/DataOptions';
 export function deriveChunkGroupData(stats: Stats, options: DataOptions) {
     const assetFilter = (options && options.assetFilter) || defaultAssetFilter;
     const chunkGroupData: ChunkGroupData = {};
-    const assetSizeMap = getAssetSizeMap(stats);
 
     // Process each named chunk group
     for (let chunkGroupName of Object.keys(stats.namedChunkGroups)) {
         const chunkGroup = stats.namedChunkGroups[chunkGroupName];
 
-        let size = 0;
+        let chunkGroupSize = 0;
         let assets: string[] = [];
         let ignoredAssets: string[] = [];
 
         // Process each asset in the chunk group
-        for (let asset of chunkGroup.assets) {
-            if (!assetFilter(asset)) {
-                ignoredAssets.push(asset);
+        for (let { name, size } of chunkGroup.assets) {
+            if (!assetFilter(name)) {
+                ignoredAssets.push(name);
             } else {
-                assets.push(asset);
-                size += assetSizeMap.get(asset);
+                assets.push(name);
+                chunkGroupSize += size;
             }
         }
 
-        chunkGroupData[chunkGroupName] = { size, assets, ignoredAssets };
+        chunkGroupData[chunkGroupName] = { size: chunkGroupSize, assets, ignoredAssets };
     }
 
     return chunkGroupData;
-}
-
-// Create a map of asset name -> asset size
-function getAssetSizeMap(stats: Stats) {
-    const assetSizeMap = new Map<string, number>();
-
-    for (let asset of stats.assets) {
-        assetSizeMap.set(asset.name, asset.size);
-    }
-
-    return assetSizeMap;
 }
 
 // By default filter out source maps since they don't count towards bundle size

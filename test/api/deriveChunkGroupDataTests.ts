@@ -1,7 +1,10 @@
 import { deriveChunkGroupData } from '../../src/api/deriveBundleData/deriveChunkGroupData';
 
 describe('deriveChunkGroupData', () => {
-    const assets = [{ name: 'asset1.js', size: 1 }, { name: 'asset2.js', size: 2 }];
+    const assets = [
+        { name: 'asset1.js', size: 1 },
+        { name: 'asset2.js', size: 2 },
+    ];
 
     it('produces data for each named chunk group', () => {
         // Arrange
@@ -27,7 +30,12 @@ describe('deriveChunkGroupData', () => {
         // Arrange
         const stats: any = {
             namedChunkGroups: {
-                chunkGroup1: { assets: ['asset1.js', 'asset2.js'] },
+                chunkGroup1: {
+                    assets: [
+                        { name: 'asset1.js', size: 1 },
+                        { name: 'asset2.js', size: 2 },
+                    ],
+                },
             },
             assets,
         };
@@ -45,7 +53,12 @@ describe('deriveChunkGroupData', () => {
         // Arrange
         const stats: any = {
             namedChunkGroups: {
-                chunkGroup1: { assets: ['asset1.js', 'asset1.js.map'] },
+                chunkGroup1: {
+                    assets: [
+                        { name: 'asset1.js', size: 1 },
+                        { name: 'asset1.js.map', size: 10 },
+                    ],
+                },
             },
             assets,
         };
@@ -55,7 +68,11 @@ describe('deriveChunkGroupData', () => {
 
         // Assert
         expect(chunkGroupData).toEqual({
-            chunkGroup1: { size: 1, assets: ['asset1.js'], ignoredAssets: ['asset1.js.map'] },
+            chunkGroup1: {
+                size: 1,
+                assets: ['asset1.js'],
+                ignoredAssets: ['asset1.js.map'],
+            },
         });
     });
 
@@ -63,7 +80,12 @@ describe('deriveChunkGroupData', () => {
         // Arrange
         const stats: any = {
             namedChunkGroups: {
-                chunkGroup1: { assets: ['asset1.js', 'asset1.bad'] },
+                chunkGroup1: {
+                    assets: [
+                        { name: 'asset1.js', size: 1 },
+                        { name: 'asset1.bad', size: 10 },
+                    ],
+                },
             },
             assets,
         };
