@@ -1,6 +1,10 @@
 import { processModule, getParents } from '../../src/api/deriveBundleData/deriveGraph';
 
-const moduleIdToNameMap: any = new Map([[1, 'module1'], [2, 'module2'], [3, 'module3']]);
+const moduleIdToNameMap: any = new Map([
+    [1, 'module1'],
+    [2, 'module2'],
+    [3, 'module3'],
+]);
 const namedChunkGroupLookupMap: any = { getNamedChunkGroups: () => ['chunkGroup1'] };
 
 describe('processModule', () => {
@@ -74,7 +78,10 @@ describe('processModule', () => {
             reasons: [],
             chunks: [1, 2, 3],
             size: 123,
-            modules: [{ name: 'module1', size: 456 }, { name: 'module2', size: 789 }],
+            modules: [
+                { name: 'module1', size: 456 },
+                { name: 'module2', size: 789 },
+            ],
         };
 
         // Act
