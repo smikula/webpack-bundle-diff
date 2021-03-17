@@ -12,6 +12,8 @@ export interface ModuleGraphNode {
     containsHoistedModules?: boolean;
     name: string;
     parents: string[];
+    directParents: string[];
+    lazyParents: string[];
     size: number;
 }
 
