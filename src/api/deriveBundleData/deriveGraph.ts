@@ -72,13 +72,17 @@ export function getParents(reasons: Reason[], moduleIdToNameMap: ModuleIdToNameM
     const lazyParents = new Set<string>();
 
     for (const reason of reasons) {
-        // Skip nulls (this happens for entry point modules)
-        if (!reason.moduleId) {
+        // If moduleId is present, use that to look up the module name.  (The moduleName
+        // property, in that case, has something like "foo.js + 12 modules" which isn't what we
+        // want.)  But if there is no moduleId, use the moduleName instead - it appears to be
+        // correct in that case.
+        const moduleName =
+            (reason.moduleId && moduleIdToNameMap.get(reason.moduleId)) || reason.moduleName;
+
+        // Entry point modules will have a reason with no associated module
+        if (!moduleName) {
             continue;
         }
-
-        // We actually care about the module names
-        const moduleName = moduleIdToNameMap.get(reason.moduleId);
 
         // Distinguish between lazy and normal imports
         const isLazyParent = reason.type === 'import()';
