@@ -34,9 +34,9 @@ export function processModule(
         // This is just an individual module, so we can add it to the graph as-is
         addModuleToGraph(graph, {
             name: module.name,
-            parents: getParents(module.reasons, moduleIdToNameMap),
             namedChunkGroups,
             size: module.size,
+            ...getParents(module.reasons, moduleIdToNameMap),
         });
     } else {
         // The module is the amalgamation of multiple scope hoisted modules, so we add each of
@@ -46,10 +46,10 @@ export function processModule(
         const primaryModule = module.modules[0];
         addModuleToGraph(graph, {
             name: primaryModule.name,
-            parents: getParents(module.reasons, moduleIdToNameMap),
             containsHoistedModules: true,
             namedChunkGroups,
             size: primaryModule.size,
+            ...getParents(module.reasons, moduleIdToNameMap),
         });
 
         // Other hoisted modules are parented to the primary module
@@ -58,6 +58,8 @@ export function processModule(
             addModuleToGraph(graph, {
                 name: hoistedModule.name,
                 parents: [primaryModule.name],
+                directParents: [primaryModule.name],
+                lazyParents: [],
                 namedChunkGroups,
                 size: hoistedModule.size,
             });
@@ -66,17 +68,36 @@ export function processModule(
 }
 
 export function getParents(reasons: Reason[], moduleIdToNameMap: ModuleIdToNameMap) {
-    // Start with the module ID for each reason
-    let moduleIds = reasons.map(r => r.moduleId);
+    const directParents = new Set<string>();
+    const lazyParents = new Set<string>();
 
-    // Filter out nulls (this happens for entry point modules)
-    moduleIds = moduleIds.filter(p => p != null);
+    for (const reason of reasons) {
+        // If moduleId is present, use that to look up the module name.  (The moduleName
+        // property, in that case, has something like "foo.js + 12 modules" which isn't what we
+        // want.)  But if there is no moduleId, use the moduleName instead - it appears to be
+        // correct in that case.
+        const moduleName =
+            (reason.moduleId && moduleIdToNameMap.get(reason.moduleId)) || reason.moduleName;
 
-    // Filter out duplicates (this happens due to scope hoisting)
-    moduleIds = [...new Set(moduleIds)];
+        // Entry point modules will have a reason with no associated module
+        if (!moduleName) {
+            continue;
+        }
 
-    // Map module IDs to module names
-    return moduleIds.map(moduleId => moduleIdToNameMap.get(moduleId));
+        // Distinguish between lazy and normal imports
+        const isLazyParent = reason.type === 'import()';
+        if (isLazyParent) {
+            lazyParents.add(moduleName);
+        } else {
+            directParents.add(moduleName);
+        }
+    }
+
+    return {
+        parents: [...directParents, ...lazyParents],
+        directParents: [...directParents],
+        lazyParents: [...lazyParents],
+    };
 }
 
 function addModuleToGraph(graph: ModuleGraph, moduleNode: ModuleGraphNode) {
