@@ -29,6 +29,7 @@ export interface Module {
 
 export interface Reason {
     moduleId: string | number;
+    moduleName: string;
     type: string;
     userRequest: string;
 }

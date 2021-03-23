@@ -5,6 +5,7 @@ const moduleIdToNameMap: any = new Map([
     [2, 'module2'],
     [3, 'module3'],
 ]);
+
 const namedChunkGroupLookupMap: any = { getNamedChunkGroups: () => ['chunkGroup1'] };
 
 describe('processModule', () => {
@@ -39,6 +40,8 @@ describe('processModule', () => {
         expect(graph[module.name]).toEqual({
             name: 'module1',
             parents: [],
+            directParents: [],
+            lazyParents: [],
             namedChunkGroups: ['chunkGroup1'],
             size: 123,
         });
@@ -63,6 +66,8 @@ describe('processModule', () => {
         expect(graph['module1']).toEqual({
             name: 'module1',
             parents: [],
+            directParents: [],
+            lazyParents: [],
             containsHoistedModules: true,
             namedChunkGroups: ['chunkGroup1'],
             size: 456,
@@ -91,6 +96,8 @@ describe('processModule', () => {
         expect(graph['module2']).toEqual({
             name: 'module2',
             parents: ['module1'],
+            directParents: ['module1'],
+            lazyParents: [],
             namedChunkGroups: ['chunkGroup1'],
             size: 789,
         });
@@ -116,26 +123,48 @@ describe('processModule', () => {
 });
 
 describe('getParents', () => {
-    it('gets the modules from the reasons array and maps them to module names', () => {
+    it('maps module IDs to names', () => {
         // Arrange
         const reasons: any = [{ moduleId: 1 }, { moduleId: 2 }, { moduleId: 3 }];
 
         // Act
-        const parents = getParents(reasons, moduleIdToNameMap);
+        const result = getParents(reasons, moduleIdToNameMap);
 
         // Assert
-        expect(parents).toEqual(['module1', 'module2', 'module3']);
+        expect(result.parents).toEqual(['module1', 'module2', 'module3']);
     });
 
-    it('filters out nulls', () => {
+    it('prefers moduleId, if available', () => {
+        // Arrange
+        const reasons: any = [{ moduleId: 1, moduleName: 'testName' }];
+
+        // Act
+        const result = getParents(reasons, moduleIdToNameMap);
+
+        // Assert
+        expect(result.parents).toEqual(['module1']);
+    });
+
+    it('uses moduleName if moduleId is missing', () => {
+        // Arrange
+        const reasons: any = [{ moduleId: null, moduleName: 'testName' }];
+
+        // Act
+        const result = getParents(reasons, moduleIdToNameMap);
+
+        // Assert
+        expect(result.parents).toEqual(['testName']);
+    });
+
+    it('filters out entry points', () => {
         // Arrange
         const reasons: any = [{ moduleId: 1 }, { moduleId: null }, { moduleId: 3 }];
 
         // Act
-        const parents = getParents(reasons, moduleIdToNameMap);
+        const result = getParents(reasons, moduleIdToNameMap);
 
         // Assert
-        expect(parents).toEqual(['module1', 'module3']);
+        expect(result.parents).toEqual(['module1', 'module3']);
     });
 
     it('filters out duplicates', () => {
@@ -143,9 +172,37 @@ describe('getParents', () => {
         const reasons: any = [{ moduleId: 1 }, { moduleId: 1 }, { moduleId: 1 }];
 
         // Act
-        const parents = getParents(reasons, moduleIdToNameMap);
+        const result = getParents(reasons, moduleIdToNameMap);
 
         // Assert
-        expect(parents).toEqual(['module1']);
+        expect(result.parents).toEqual(['module1']);
+    });
+
+    it('distinguishes direct and lazy parents', () => {
+        // Arrange
+        const reasons: any = [
+            {
+                moduleId: 1,
+                type: 'other',
+            },
+            {
+                moduleId: 2,
+                type: 'import()',
+            },
+            {
+                moduleId: 3,
+                type: 'other',
+            },
+        ];
+
+        // Act
+        const result = getParents(reasons, moduleIdToNameMap);
+
+        // Assert
+        expect(result).toEqual({
+            parents: ['module1', 'module3', 'module2'],
+            directParents: ['module1', 'module3'],
+            lazyParents: ['module2'],
+        });
     });
 });
