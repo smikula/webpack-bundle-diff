@@ -6,7 +6,7 @@ import { DataOptions } from '../../types/DataOptions';
 
 export function deriveBundleData(stats: Stats, options?: DataOptions): BundleData {
     return {
-        graph: deriveGraph(stats),
+        graph: deriveGraph(stats, options?.validate),
         chunkGroups: deriveChunkGroupData(stats, options),
     };
 }

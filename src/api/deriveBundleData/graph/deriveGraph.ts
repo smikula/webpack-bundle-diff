@@ -3,8 +3,9 @@ import { Stats, Module, Reason } from '../../../types/Stats';
 import { arrayUnion } from '../../../util/arrayUnion';
 import ModuleIdToNameMap from './ModuleIdToNameMap';
 import NamedChunkGroupLookupMap from '../NamedChunkGroupLookupMap';
+import { validateGraph } from './validateGraph';
 
-export function deriveGraph(stats: Stats): ModuleGraph {
+export function deriveGraph(stats: Stats, validate?: boolean): ModuleGraph {
     const moduleIdToNameMap = new ModuleIdToNameMap(stats);
     const ncgLookup = new NamedChunkGroupLookupMap(stats);
 
@@ -12,6 +13,10 @@ export function deriveGraph(stats: Stats): ModuleGraph {
 
     for (let module of stats.modules) {
         processModule(module, graph, moduleIdToNameMap, ncgLookup);
+    }
+
+    if (validate) {
+        validateGraph(graph);
     }
 
     return graph;

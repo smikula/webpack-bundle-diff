@@ -5,6 +5,12 @@ export interface DataOptions {
      * size.
      */
     assetFilter?: AssetFilter;
+
+    /**
+     * Optional flag to validate the module graph.  If any errors are detected they are reported to
+     * the error console and the API will fail.
+     */
+    validate?: boolean;
 }
 
 export interface AssetFilter {
