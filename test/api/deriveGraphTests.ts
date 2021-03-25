@@ -1,4 +1,4 @@
-import { processModule, processReasons } from '../../src/api/deriveBundleData/deriveGraph';
+import { processModule, processReasons } from '../../src/api/deriveBundleData/graph/deriveGraph';
 
 const moduleIdToNameMap: any = new Map([
     [1, 'module1'],
