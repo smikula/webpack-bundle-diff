@@ -1,6 +1,6 @@
 import { BundleData } from '../../types/BundleData';
 import { Stats } from '../../types/Stats';
-import { deriveGraph } from './deriveGraph';
+import { deriveGraph } from './graph/deriveGraph';
 import { deriveChunkGroupData } from './deriveChunkGroupData';
 import { DataOptions } from '../../types/DataOptions';
 

@@ -1,8 +1,8 @@
-import { ModuleGraph, ModuleGraphNode } from '../../types/BundleData';
-import { Stats, Module, Reason } from '../../types/Stats';
-import { arrayUnion } from '../../util/arrayUnion';
+import { ModuleGraph, ModuleGraphNode } from '../../../types/BundleData';
+import { Stats, Module, Reason } from '../../../types/Stats';
+import { arrayUnion } from '../../../util/arrayUnion';
 import ModuleIdToNameMap from './ModuleIdToNameMap';
-import NamedChunkGroupLookupMap from './NamedChunkGroupLookupMap';
+import NamedChunkGroupLookupMap from '../NamedChunkGroupLookupMap';
 
 export function deriveGraph(stats: Stats): ModuleGraph {
     const moduleIdToNameMap = new ModuleIdToNameMap(stats);

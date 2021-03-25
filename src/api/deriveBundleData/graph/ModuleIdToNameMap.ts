@@ -1,4 +1,4 @@
-import { Stats } from '../../types/Stats';
+import { Stats } from '../../../types/Stats';
 
 // Helper class to map module IDs to module names
 export default class ModuleIdToNameMap {
