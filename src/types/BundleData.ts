@@ -11,6 +11,7 @@ export interface ModuleGraphNode {
     namedChunkGroups: string[];
     containsHoistedModules?: boolean;
     name: string;
+    entryType?: string;
     parents: string[];
     directParents: string[];
     lazyParents: string[];

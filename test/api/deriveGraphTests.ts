@@ -1,4 +1,4 @@
-import { processModule, getParents } from '../../src/api/deriveBundleData/deriveGraph';
+import { processModule, processReasons } from '../../src/api/deriveBundleData/deriveGraph';
 
 const moduleIdToNameMap: any = new Map([
     [1, 'module1'],
@@ -122,24 +122,54 @@ describe('processModule', () => {
     });
 });
 
-describe('getParents', () => {
+describe('processReasons', () => {
     it('maps module IDs to names', () => {
         // Arrange
-        const reasons: any = [{ moduleId: 1 }, { moduleId: 2 }, { moduleId: 3 }];
+        const reasons: any = [
+            { moduleId: 1, type: 'test' },
+            { moduleId: 2, type: 'test' },
+            { moduleId: 3, type: 'test' },
+        ];
 
         // Act
-        const result = getParents(reasons, moduleIdToNameMap);
+        const result = processReasons(reasons, moduleIdToNameMap);
 
         // Assert
         expect(result.parents).toEqual(['module1', 'module2', 'module3']);
     });
 
-    it('prefers moduleId, if available', () => {
+    it('identifies non-entry point modules', () => {
         // Arrange
-        const reasons: any = [{ moduleId: 1, moduleName: 'testName' }];
+        const reasons: any = [{ moduleId: 1, type: 'test' }];
 
         // Act
-        const result = getParents(reasons, moduleIdToNameMap);
+        const result = processReasons(reasons, moduleIdToNameMap);
+
+        // Assert
+        expect(result.entryType).toBeUndefined();
+    });
+
+    it('identifies entry point modules', () => {
+        // Arrange
+        const expectedEntryType = 'test entry';
+        const reasons: any = [
+            { moduleId: 1, type: expectedEntryType },
+            { moduleId: 2, type: 'test' },
+        ];
+
+        // Act
+        const result = processReasons(reasons, moduleIdToNameMap);
+
+        // Assert
+        expect(result.entryType).toEqual(expectedEntryType);
+    });
+
+    it('prefers moduleId, if available', () => {
+        // Arrange
+        const reasons: any = [{ moduleId: 1, moduleName: 'testName', type: 'test' }];
+
+        // Act
+        const result = processReasons(reasons, moduleIdToNameMap);
 
         // Assert
         expect(result.parents).toEqual(['module1']);
@@ -147,10 +177,10 @@ describe('getParents', () => {
 
     it('uses moduleName if moduleId is missing', () => {
         // Arrange
-        const reasons: any = [{ moduleId: null, moduleName: 'testName' }];
+        const reasons: any = [{ moduleId: null, moduleName: 'testName', type: 'test' }];
 
         // Act
-        const result = getParents(reasons, moduleIdToNameMap);
+        const result = processReasons(reasons, moduleIdToNameMap);
 
         // Assert
         expect(result.parents).toEqual(['testName']);
@@ -158,10 +188,14 @@ describe('getParents', () => {
 
     it('filters out entry points', () => {
         // Arrange
-        const reasons: any = [{ moduleId: 1 }, { moduleId: null }, { moduleId: 3 }];
+        const reasons: any = [
+            { moduleId: 1, type: 'test' },
+            { moduleId: null, type: 'test entry' },
+            { moduleId: 3, type: 'test' },
+        ];
 
         // Act
-        const result = getParents(reasons, moduleIdToNameMap);
+        const result = processReasons(reasons, moduleIdToNameMap);
 
         // Assert
         expect(result.parents).toEqual(['module1', 'module3']);
@@ -169,10 +203,14 @@ describe('getParents', () => {
 
     it('filters out duplicates', () => {
         // Arrange
-        const reasons: any = [{ moduleId: 1 }, { moduleId: 1 }, { moduleId: 1 }];
+        const reasons: any = [
+            { moduleId: 1, type: 'test' },
+            { moduleId: 1, type: 'test' },
+            { moduleId: 1, type: 'test' },
+        ];
 
         // Act
-        const result = getParents(reasons, moduleIdToNameMap);
+        const result = processReasons(reasons, moduleIdToNameMap);
 
         // Assert
         expect(result.parents).toEqual(['module1']);
@@ -181,22 +219,13 @@ describe('getParents', () => {
     it('distinguishes direct and lazy parents', () => {
         // Arrange
         const reasons: any = [
-            {
-                moduleId: 1,
-                type: 'other',
-            },
-            {
-                moduleId: 2,
-                type: 'import()',
-            },
-            {
-                moduleId: 3,
-                type: 'other',
-            },
+            { moduleId: 1, type: 'test' },
+            { moduleId: 2, type: 'import()' },
+            { moduleId: 3, type: 'test' },
         ];
 
         // Act
-        const result = getParents(reasons, moduleIdToNameMap);
+        const result = processReasons(reasons, moduleIdToNameMap);
 
         // Assert
         expect(result).toEqual({
