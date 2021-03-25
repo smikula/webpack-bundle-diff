@@ -37,7 +37,7 @@ export function processModule(
             name: module.name,
             namedChunkGroups,
             size: module.size,
-            ...getParents(module.reasons, moduleIdToNameMap),
+            ...processReasons(module.reasons, moduleIdToNameMap),
         });
     } else {
         // The module is the amalgamation of multiple scope hoisted modules, so we add each of
@@ -50,7 +50,7 @@ export function processModule(
             containsHoistedModules: true,
             namedChunkGroups,
             size: primaryModule.size,
-            ...getParents(module.reasons, moduleIdToNameMap),
+            ...processReasons(module.reasons, moduleIdToNameMap),
         });
 
         // Other hoisted modules are parented to the primary module
@@ -68,11 +68,20 @@ export function processModule(
     }
 }
 
-export function getParents(reasons: Reason[], moduleIdToNameMap: ModuleIdToNameMap) {
+export function processReasons(reasons: Reason[], moduleIdToNameMap: ModuleIdToNameMap) {
     const directParents = new Set<string>();
     const lazyParents = new Set<string>();
+    let entryType: string | undefined = undefined;
 
     for (const reason of reasons) {
+        // Identify entry modules
+        if (reason.type.endsWith('entry')) {
+            entryType = reason.type;
+
+            // There is no parent module in this case, so just move on
+            continue;
+        }
+
         // If moduleId is present, use that to look up the module name.  (The moduleName
         // property, in that case, has something like "foo.js + 12 modules" which isn't what we
         // want.)  But if there is no moduleId, use the moduleName instead - it appears to be
@@ -80,9 +89,9 @@ export function getParents(reasons: Reason[], moduleIdToNameMap: ModuleIdToNameM
         const moduleName =
             (reason.moduleId && moduleIdToNameMap.get(reason.moduleId)) || reason.moduleName;
 
-        // Entry point modules will have a reason with no associated module
+        // We should have a module name at this point
         if (!moduleName) {
-            continue;
+            throw new Error(`Unable to determine module name.`);
         }
 
         // Distinguish between lazy and normal imports
@@ -98,6 +107,7 @@ export function getParents(reasons: Reason[], moduleIdToNameMap: ModuleIdToNameM
         parents: [...directParents, ...lazyParents],
         directParents: [...directParents],
         lazyParents: [...lazyParents],
+        entryType,
     };
 }
 
