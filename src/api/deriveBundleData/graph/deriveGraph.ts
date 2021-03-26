@@ -1,19 +1,17 @@
 import { ModuleGraph, ModuleGraphNode } from '../../../types/BundleData';
 import { Stats, Module } from '../../../types/Stats';
 import { arrayUnion } from '../../../util/arrayUnion';
-import ModuleIdToNameMap from './ModuleIdToNameMap';
 import NamedChunkGroupLookupMap from '../NamedChunkGroupLookupMap';
 import { validateGraph } from './validateGraph';
 import { processReasons } from './processReasons';
 
 export function deriveGraph(stats: Stats, validate?: boolean): ModuleGraph {
-    const moduleIdToNameMap = new ModuleIdToNameMap(stats);
     const ncgLookup = new NamedChunkGroupLookupMap(stats);
 
     let graph: ModuleGraph = {};
 
     for (let module of stats.modules) {
-        processModule(module, graph, moduleIdToNameMap, ncgLookup);
+        processModule(module, graph, ncgLookup);
     }
 
     if (validate) {
@@ -26,7 +24,6 @@ export function deriveGraph(stats: Stats, validate?: boolean): ModuleGraph {
 export function processModule(
     module: Module,
     graph: ModuleGraph,
-    moduleIdToNameMap: ModuleIdToNameMap,
     ncgLookup: NamedChunkGroupLookupMap
 ) {
     // Modules marked as ignored don't get bundled, so we can ignore them too
@@ -43,7 +40,7 @@ export function processModule(
             name: module.name,
             namedChunkGroups,
             size: module.size,
-            ...processReasons(module.reasons, moduleIdToNameMap),
+            ...processReasons(module.reasons),
         });
     } else {
         // The module is the amalgamation of multiple scope hoisted modules, so we add each of
@@ -56,7 +53,7 @@ export function processModule(
             containsHoistedModules: true,
             namedChunkGroups,
             size: primaryModule.size,
-            ...processReasons(module.reasons, moduleIdToNameMap),
+            ...processReasons(module.reasons),
         });
 
         // Other hoisted modules are parented to the primary module

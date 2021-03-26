@@ -1,7 +1,6 @@
 import { Reason } from '../../../types/Stats';
-import ModuleIdToNameMap from './ModuleIdToNameMap';
 
-export function processReasons(reasons: Reason[], moduleIdToNameMap: ModuleIdToNameMap) {
+export function processReasons(reasons: Reason[]) {
     const directParents = new Set<string>();
     const lazyParents = new Set<string>();
     let entryType: string | undefined = undefined;
@@ -18,24 +17,17 @@ export function processReasons(reasons: Reason[], moduleIdToNameMap: ModuleIdToN
             continue;
         }
 
-        // If moduleId is present, use that to look up the module name.  (The moduleName
-        // property, in that case, has something like "foo.js + 12 modules" which isn't what we
-        // want.)  But if there is no moduleId, use the moduleName instead - it appears to be
-        // correct in that case.
-        const moduleName =
-            (reason.moduleId && moduleIdToNameMap.get(reason.moduleId)) || reason.moduleName;
-
-        // We should have a module name at this point
-        if (!moduleName) {
-            throw new Error(`Unable to determine module name.`);
+        const parentModuleName = reason.resolvedModule;
+        if (!parentModuleName) {
+            throw new Error(`Missing reason.resolvedModule.`);
         }
 
         // Distinguish between lazy and normal imports
         const isLazyParent = reason.type === 'import()';
         if (isLazyParent) {
-            lazyParents.add(moduleName);
+            lazyParents.add(parentModuleName);
         } else {
-            directParents.add(moduleName);
+            directParents.add(parentModuleName);
         }
     }
 

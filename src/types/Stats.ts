@@ -30,6 +30,7 @@ export interface Module {
 export interface Reason {
     moduleId: string | number;
     moduleName: string;
+    resolvedModule: string;
     type: string;
     userRequest: string;
 }
