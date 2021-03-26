@@ -79,8 +79,11 @@ export function processReasons(reasons: Reason[], moduleIdToNameMap: ModuleIdToN
     let entryType: string | undefined = undefined;
 
     for (const reason of reasons) {
-        // Identify entry modules
-        if (reason.type.endsWith('entry')) {
+        if (!reason.type) {
+            // Entry module sometimes have spurious reasons without a type
+            continue;
+        } else if (reason.type.endsWith('entry')) {
+            // Identify entry modules
             entryType = reason.type;
 
             // There is no parent module in this case, so just move on
