@@ -14,6 +14,8 @@ export function deriveGraph(stats: Stats, validate?: boolean): ModuleGraph {
         processModule(module, graph, ncgLookup);
     }
 
+    debugger;
+
     if (validate) {
         validateGraph(graph);
     }
@@ -46,26 +48,29 @@ export function processModule(
         // The module is the amalgamation of multiple scope hoisted modules, so we add each of
         // them individually.
 
-        // Assume the first hoisted module acts as the primary module
-        const primaryModule = module.modules[0];
+        // The first hoisted module inherits its reasons from the primary module
+        const firstModule = module.modules[0];
         addModuleToGraph(graph, {
-            name: primaryModule.name,
-            containsHoistedModules: true,
+            name: firstModule.name,
             namedChunkGroups,
-            size: primaryModule.size,
+            size: firstModule.size,
             ...processReasons(module.reasons),
         });
 
-        // Other hoisted modules are parented to the primary module
+        // Other submodules have their own reasons
+        //
+        // Note: it looks like some submodules don't have any reasons.  It appears that this
+        // happens with modules that get optimized out of the final graph; e.g. an index that just
+        // re-exports stuff from other modules.
+        //
         for (let i = 1; i < module.modules.length; i++) {
-            const hoistedModule = module.modules[i];
+            const submodule = module.modules[i];
+
             addModuleToGraph(graph, {
-                name: hoistedModule.name,
-                parents: [primaryModule.name],
-                directParents: [primaryModule.name],
-                lazyParents: [],
+                name: submodule.name,
                 namedChunkGroups,
-                size: hoistedModule.size,
+                size: submodule.size,
+                ...processReasons(submodule.reasons),
             });
         }
     }
