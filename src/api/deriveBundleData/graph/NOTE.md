@@ -1,0 +1,1 @@
+Looks like this approach isn't going to work, because some of the concatenated modules don't _have_ any reasons.  I could improve the graph, but it won't be perfect, so I'm not sure that's really better.  Next approach: see what I can do implementing it as a plugin and grabbing the module graph before it gets optimized.
