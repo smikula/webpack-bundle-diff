@@ -6,6 +6,7 @@ import NamedChunkGroupLookupMap from '../NamedChunkGroupLookupMap';
 import { validateGraph } from './validateGraph';
 import { processReasons } from './processReasons';
 
+// TEST COMMENT
 export function deriveGraph(stats: Stats, validate?: boolean): ModuleGraph {
     const moduleIdToNameMap = new ModuleIdToNameMap(stats);
     const ncgLookup = new NamedChunkGroupLookupMap(stats);
