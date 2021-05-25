@@ -2,6 +2,12 @@
 
 Webpack-bundle-diff is a tool for understanding changes to your webpack bundles.  Because a single import can cause a whole tree of downstream dependencies to get pulled into a bundle, it is possible for a seemingly innocuous change to have a large effect on your bundle size.  And when some module *does* get unexpectedly included in your bundle, it can be hard to understand specifically what code change caused it.  By comparing the webpack stats from before and after a change, webpack-bundle-diff helps you understand the change's precise impact.
 
+webpack | webpack-bundle-diff
+--------|--------------------
+5.x.x   | >=1.0.0
+4.x.x   |  <1.0.0
+
+
 ## Getting started
 
 1. Install: `npm install -g webpack-bundle-diff`
