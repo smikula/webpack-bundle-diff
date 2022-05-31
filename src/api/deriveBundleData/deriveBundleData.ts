@@ -6,8 +6,6 @@ import { DataOptions } from '../../types/DataOptions';
 import { getStatsFromRawStats } from './getStatsFromRawStats';
 
 export function deriveBundleData(rawStats: RawStats, options?: DataOptions): BundleData {
-    // TODO: update readme
-    // TODO: tests
     const stats = getStatsFromRawStats(rawStats, options?.childStats);
 
     return {
