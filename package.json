@@ -10,8 +10,8 @@
     },
     "scripts": {
         "build": "tsc",
-        "data": "yarn build && node --max-old-space-size=12288 lib/cli.js data sampledata/stats.json -o sampledata/bundledata.json --validate",
-        "ddata": "yarn build && node --inspect-brk --max-old-space-size=12288 lib/cli.js data sampledata/stats.json -o sampledata/bundledata.json --validate",
+        "data": "yarn build && node --max-old-space-size=100288 lib/cli.js data sampledata/stats.json -o sampledata/bundledata.json --validate",
+        "ddata": "yarn build && node --inspect-brk --max-old-space-size=100288 lib/cli.js data sampledata/stats.json -o sampledata/bundledata.json --validate",
         "diff": "yarn build && node lib/cli.js diff sampledata/data1.json sampledata/data2.json -o sampledata/diff.json",
         "ddiff": "yarn build && node --inspect-brk lib/cli.js diff sampledata/data1.json sampledata/data2.json -o sampledata/diff.json",
         "report": "yarn build && node lib/cli.js report sampledata/diff.json -o sampledata/report.md",
