@@ -4,7 +4,14 @@ export interface Stats {
     chunks: Chunk[];
     modules: Module[];
     namedChunkGroups: { [name: string]: NamedChunkGroup };
+    name?: string;
 }
+
+export interface MultiStats {
+    children: Stats[];
+}
+
+export type RawStats = Stats | MultiStats;
 
 export interface Asset {
     name: string;

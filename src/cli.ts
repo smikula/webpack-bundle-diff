@@ -1,7 +1,7 @@
 import * as commander from 'commander';
 import * as fs from 'fs';
 import readJson from './util/readJson';
-import { Stats } from './types/Stats';
+import { RawStats } from './types/Stats';
 import { deriveBundleData, diff, generateReport, DiffResults } from './index';
 
 // Read the package version from package.json
@@ -14,13 +14,14 @@ program
     .command('data <stats>')
     .description('derive bundle data from stats')
     .option('-o, --outFile <string>', 'output file')
+    .option('-c, --childStats <string>', 'child stats name or index')
     .option('-v, --validate', 'validate module graph')
     .action((statsPath, options) => {
         console.log('Deriving bundle data from stats...');
         readJson(statsPath)
-            .then((stats: Stats) => {
-                const { validate } = options;
-                const bundleData = deriveBundleData(stats, { validate });
+            .then((stats: RawStats) => {
+                const { childStats, validate } = options;
+                const bundleData = deriveBundleData(stats, { childStats, validate });
                 fs.writeFileSync(options.outFile, JSON.stringify(bundleData, null, 2));
             })
             .catch(reportError);

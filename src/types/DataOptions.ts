@@ -11,6 +11,12 @@ export interface DataOptions {
      * the error console and the API will fail.
      */
     validate?: boolean;
+
+    /**
+     * Optional specifier for the child stats to use, if the webpack build included multiple
+     * configs.  This can be the stats name or an index into the children array.
+     */
+    childStats?: string | number;
 }
 
 export interface AssetFilter {
