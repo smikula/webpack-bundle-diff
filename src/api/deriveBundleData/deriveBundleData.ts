@@ -8,7 +8,7 @@ import { getStatsFromRawStats } from './getStatsFromRawStats';
 export function deriveBundleData(rawStats: RawStats, options?: DataOptions): BundleData {
     // TODO: update readme
     // TODO: tests
-    const stats = getStatsFromRawStats(rawStats, options?.childConfig);
+    const stats = getStatsFromRawStats(rawStats, options?.childStats);
 
     return {
         graph: deriveGraph(stats, options?.validate),
