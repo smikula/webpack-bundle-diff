@@ -1,16 +1,18 @@
+import { Chunk, Compilation } from 'webpack';
 import { Stats, ChunkId } from '../../types/Stats';
 
 // Helper class to look up what named chunk groups a given chunk is in
 export default class NamedChunkGroupLookupMap {
     private map: Map<ChunkId, string[]>;
 
-    constructor(stats: Stats) {
+    constructor(stats: Stats | Compilation) {
         // Initialize the map from the given stats
         this.map = new Map();
-        for (let name of Object.keys(stats.namedChunkGroups)) {
-            const chunkGroup = stats.namedChunkGroups[name];
-
-            for (let chunkId of chunkGroup.chunks) {
+        for (let [name, chunkGroup] of stats.namedChunkGroups instanceof Map
+            ? stats.namedChunkGroups
+            : Object.entries(stats.namedChunkGroups)) {
+            for (let chunk of chunkGroup.chunks) {
+                const chunkId = chunk instanceof Chunk ? chunk.id : chunk;
                 if (!this.map.has(chunkId)) {
                     this.map.set(chunkId, []);
                 }

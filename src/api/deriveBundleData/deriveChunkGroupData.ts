@@ -1,21 +1,35 @@
 import { Stats } from '../../types/Stats';
 import { ChunkGroupData } from '../../types/BundleData';
 import { DataOptions } from '../../types/DataOptions';
+import { Compilation } from 'webpack';
 
-export function deriveChunkGroupData(stats: Stats, options: DataOptions) {
+export function deriveChunkGroupData(stats: Stats | Compilation, options: DataOptions) {
     const assetFilter = (options && options.assetFilter) || defaultAssetFilter;
     const chunkGroupData: ChunkGroupData = {};
 
     // Process each named chunk group
     for (let chunkGroupName of Object.keys(stats.namedChunkGroups)) {
-        const chunkGroup = stats.namedChunkGroups[chunkGroupName];
+        const chunkGroup =
+            stats.namedChunkGroups instanceof Map
+                ? stats.namedChunkGroups.get(chunkGroupName)
+                : stats.namedChunkGroups[chunkGroupName];
 
         let chunkGroupSize = 0;
         let assets: string[] = [];
         let ignoredAssets: string[] = [];
 
+        const chunkGroupAssets =
+            'pushChunk' in chunkGroup
+                ? chunkGroup
+                      .getFiles()
+                      .map((assetName: string) => ({
+                          name: assetName,
+                          size: (stats as Compilation).getAsset(assetName).info.size,
+                      }))
+                : chunkGroup.assets;
+
         // Process each asset in the chunk group
-        for (let { name, size } of chunkGroup.assets) {
+        for (let { name, size } of chunkGroupAssets) {
             if (!assetFilter(name)) {
                 ignoredAssets.push(name);
             } else {
