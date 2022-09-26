@@ -5,7 +5,7 @@ export function getStatsFromRawStats(
     rawStats: StatsCompilation | Stats | MultiStats,
     childStats: string | number | undefined
 ): SingleCompilationStats | Compilation {
-    if ('children' in rawStats || rawStats instanceof MultiStats) {
+    if ('children' in rawStats || 'stats' in rawStats) {
         // Make sure we are given a childStats option
         if (!childStats) {
             throw new Error('Multiple configs in build; childStats must be specified.');
@@ -14,13 +14,13 @@ export function getStatsFromRawStats(
         // First, try to look up childStats by name
         if (typeof childStats === 'string') {
             const stats =
-                rawStats instanceof MultiStats
-                    ? rawStats.stats.find(({ compilation: { name } }) => name === childStats)
-                    : rawStats.children.find(s => s.name === childStats);
+                'children' in rawStats
+                    ? rawStats.children.find(s => s.name === childStats)
+                    : (rawStats as MultiStats).stats.find(
+                          ({ compilation: { name } }) => name === childStats
+                      );
             if (stats) {
-                return stats instanceof Stats
-                    ? stats.compilation
-                    : (stats as SingleCompilationStats);
+                return 'compilation' in stats ? stats.compilation : stats;
             }
         }
 
@@ -28,18 +28,16 @@ export function getStatsFromRawStats(
         const index = typeof childStats === 'number' ? childStats : parseInt(childStats);
         if (!isNaN(index)) {
             const stats =
-                rawStats instanceof MultiStats
-                    ? rawStats.stats[index].compilation
-                    : rawStats.children[index];
+                'children' in rawStats
+                    ? rawStats.children[index]
+                    : rawStats.stats[index].compilation;
             if (stats) {
-                return stats instanceof Stats
-                    ? stats.compilation
-                    : (stats as SingleCompilationStats);
+                return 'compilation' in stats ? stats.compilation : stats;
             }
         }
 
         throw new Error(`Invalid childStats value: ${childStats}`);
-    } else if (rawStats instanceof Stats) {
+    } else if ('compilation' in rawStats) {
         return rawStats.compilation;
     } else {
         return rawStats as SingleCompilationStats;

@@ -42,8 +42,8 @@ export function processModule(
     const moduleName = moduleIdToNameMap.get(module.id);
     const moduleSize = typeof module.size === 'number' ? module.size : module.size();
     const moduleReasons =
-        module instanceof Module
-            ? [...(compilation as Compilation).moduleGraph.getIncomingConnections(module)]
+        'hasReasons' in module
+            ? [...(compilation as Compilation).moduleGraph.getIncomingConnections(module as Module)]
                   .map(
                       ({ dependency }) =>
                           dependency && compilation.moduleGraph.getModule(dependency).identifier()
@@ -53,7 +53,7 @@ export function processModule(
 
     // Precalculate named chunk groups since they are the same for all submodules
     const moduleChunks: (string | number | null)[] =
-        module instanceof Module ? module.getChunks().map(({ id }) => id) : module.chunks;
+        'hasReasons' in module ? (module as Module).getChunks().map(({ id }) => id) : module.chunks;
     const namedChunkGroups = ncgLookup.getNamedChunkGroups(moduleChunks);
 
     if (!module.modules) {

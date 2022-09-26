@@ -12,7 +12,7 @@ export default class NamedChunkGroupLookupMap {
             ? stats.namedChunkGroups
             : Object.entries(stats.namedChunkGroups)) {
             for (let chunk of chunkGroup.chunks) {
-                const chunkId = chunk instanceof Chunk ? chunk.id : chunk;
+                const chunkId = typeof chunk === 'object' ? chunk.id : chunk;
                 if (!this.map.has(chunkId)) {
                     this.map.set(chunkId, []);
                 }
