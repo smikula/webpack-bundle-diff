@@ -1,4 +1,4 @@
-import { Chunk, Compilation } from 'webpack';
+import { Compilation } from 'webpack';
 import { Stats, ChunkId } from '../../types/Stats';
 
 // Helper class to look up what named chunk groups a given chunk is in
