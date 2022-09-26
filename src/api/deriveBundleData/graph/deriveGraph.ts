@@ -6,6 +6,7 @@ import NamedChunkGroupLookupMap from '../NamedChunkGroupLookupMap';
 import { validateGraph } from './validateGraph';
 import { processReasons } from './processReasons';
 import { Compilation, StatsModule, Module } from 'webpack';
+import { getModuleName } from '../../../util/getModuleName';
 
 export function deriveGraph(stats: Stats | Compilation, validate?: boolean): ModuleGraph {
     const moduleIdToNameMap = new ModuleIdToNameMap(stats);
@@ -39,8 +40,7 @@ export function processModule(
         return;
     }
 
-    const moduleName = moduleIdToNameMap.get(module.id);
-    const moduleSize = typeof module.size === 'number' ? module.size : module.size();
+    const moduleName = getModuleName(module, compilation);
     const moduleReasons =
         'hasReasons' in module
             ? [...(compilation as Compilation).moduleGraph.getIncomingConnections(module as Module)]
@@ -57,6 +57,7 @@ export function processModule(
     const namedChunkGroups = ncgLookup.getNamedChunkGroups(moduleChunks);
 
     if (!module.modules) {
+        const moduleSize = typeof module.size === 'number' ? module.size : module.size();
         // This is just an individual module, so we can add it to the graph as-is
         addModuleToGraph(graph, {
             name: moduleName,
@@ -67,6 +68,10 @@ export function processModule(
     } else {
         // The module is the amalgamation of multiple scope hoisted modules, so we add each of
         // them individually.
+        const moduleSize =
+            typeof module.modules[0].size === 'number'
+                ? module.modules[0].size
+                : module.modules[0].size();
 
         // Assume the first hoisted module acts as the primary module
         addModuleToGraph(graph, {
@@ -80,7 +85,7 @@ export function processModule(
         // Other hoisted modules are parented to the primary module
         for (let i = 1; i < module.modules.length; i++) {
             const hoistedModule = module.modules[i];
-            const hoistedModuleName = moduleIdToNameMap.get(hoistedModule.id);
+            const hoistedModuleName = getModuleName(hoistedModule, compilation);
             const hoistedModuleSize =
                 typeof hoistedModule.size === 'number' ? hoistedModule.size : hoistedModule.size();
             addModuleToGraph(graph, {

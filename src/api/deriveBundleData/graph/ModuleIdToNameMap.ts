@@ -1,5 +1,6 @@
 import { Compilation, Module } from 'webpack';
 import { Stats, Module as StatsModule } from '../../../types/Stats';
+import { getModuleName } from '../../../util/getModuleName';
 
 // Helper class to map module IDs to module names
 export default class ModuleIdToNameMap {
@@ -15,12 +16,7 @@ export default class ModuleIdToNameMap {
               })
         >) {
             // If the module contains multiple hoisted modules, assume the first one is the primary module
-            let name =
-                'readableIdentifier' in module
-                    ? module.readableIdentifier((stats as Compilation).requestShortener)
-                    : module.modules
-                    ? module.modules[0].name
-                    : module.name;
+            let name = getModuleName(module, stats);
             this.map.set(module.id, name);
         }
     }
