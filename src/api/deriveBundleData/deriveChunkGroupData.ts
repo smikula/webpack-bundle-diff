@@ -8,7 +8,9 @@ export function deriveChunkGroupData(stats: Stats | Compilation, options: DataOp
     const chunkGroupData: ChunkGroupData = {};
 
     // Process each named chunk group
-    for (let chunkGroupName of Object.keys(stats.namedChunkGroups)) {
+    for (let chunkGroupName of stats.namedChunkGroups instanceof Map
+        ? stats.namedChunkGroups.keys()
+        : Object.keys(stats.namedChunkGroups)) {
         const chunkGroup =
             stats.namedChunkGroups instanceof Map
                 ? stats.namedChunkGroups.get(chunkGroupName)
@@ -20,12 +22,10 @@ export function deriveChunkGroupData(stats: Stats | Compilation, options: DataOp
 
         const chunkGroupAssets =
             'pushChunk' in chunkGroup
-                ? chunkGroup
-                      .getFiles()
-                      .map((assetName: string) => ({
-                          name: assetName,
-                          size: (stats as Compilation).getAsset(assetName).info.size,
-                      }))
+                ? chunkGroup.getFiles().map((assetName: string) => ({
+                      name: assetName,
+                      size: (stats as Compilation).getAsset(assetName).info.size,
+                  }))
                 : chunkGroup.assets;
 
         // Process each asset in the chunk group
