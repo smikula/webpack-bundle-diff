@@ -1,6 +1,7 @@
 import { Compilation, Module } from 'webpack';
 import { Stats, Module as StatsModule } from '../../../types/Stats';
 import { getModuleName } from '../../../util/getModuleName';
+import { getId } from '../../../util/getId';
 
 // Helper class to map module IDs to module names
 export default class ModuleIdToNameMap {
@@ -16,8 +17,8 @@ export default class ModuleIdToNameMap {
               })
         >) {
             // If the module contains multiple hoisted modules, assume the first one is the primary module
-            let name = getModuleName(module, stats);
-            this.map.set(module.id, name);
+            const name = getModuleName(module, stats);
+            this.map.set(getId(module, stats), name);
         }
     }
 

@@ -53,7 +53,11 @@ export function processModule(
 
     // Precalculate named chunk groups since they are the same for all submodules
     const moduleChunks: (string | number | null)[] =
-        'hasReasons' in module ? (module as Module).getChunks().map(({ id }) => id) : module.chunks;
+        'hasReasons' in module
+            ? (compilation as Compilation).chunkGraph
+                  .getModuleChunks(module as Module)
+                  .map(chunk => chunk.id)
+            : module.chunks;
     const namedChunkGroups = ncgLookup.getNamedChunkGroups(moduleChunks);
 
     if (!module.modules) {
