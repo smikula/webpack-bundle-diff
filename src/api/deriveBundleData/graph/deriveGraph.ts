@@ -79,7 +79,7 @@ export function processModule(
 
         // Assume the first hoisted module acts as the primary module
         addModuleToGraph(graph, {
-            name: moduleName,
+            name: getModuleName(module.modules[0], compilation),
             containsHoistedModules: true,
             namedChunkGroups,
             size: moduleSize,
