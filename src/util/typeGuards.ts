@@ -35,6 +35,6 @@ export function isCompilation(stats: Compilation | StatsCompilation): stats is C
     return 'hooks' in stats;
 }
 
-export function isStatsModule(mod: StatsModule | Module): mod is StatsModule {
-    return typeof mod.identifier === 'string';
+export function isModule(mod: StatsModule | Module): mod is Module {
+    return 'addChunk' in mod;
 }
