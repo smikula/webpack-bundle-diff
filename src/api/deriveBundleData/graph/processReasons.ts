@@ -43,6 +43,6 @@ export function processReasons(reasons: Reason[], moduleIdToNameMap: ModuleIdToN
         parents: [...directParents, ...lazyParents],
         directParents: [...directParents],
         lazyParents: [...lazyParents],
-        ...(entryType ? { entryType } : {}),
+        entryType,
     };
 }

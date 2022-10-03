@@ -1,12 +1,9 @@
-import { Compilation, Module } from 'webpack';
-import { Stats, Module as StatsModule } from '../types/Stats';
+import { Compilation } from 'webpack';
+import { Stats } from '../types/Stats';
+import { StatsOrComiplationModule } from '../types/StatsOrComiplationModule';
 
 export function getModuleName(
-    module:
-        | StatsModule
-        | (Module & {
-              readableIdentifier(requestShortener: Compilation['requestShortener']): string;
-          }),
+    module: StatsOrComiplationModule,
     stats: Stats | Compilation
 ): string {
     return 'readableIdentifier' in module

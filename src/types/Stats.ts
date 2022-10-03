@@ -9,7 +9,7 @@ import {
 
 // A minimal subset of the stats.json schema
 export type Stats = StatsCompilation &
-    Required<Pick<StatsCompilation, 'assets' | 'chunks' | 'modules' | 'namedChunkGroups' | 'name'>>;
+    Required<Pick<StatsCompilation, 'assets' | 'chunks' | 'modules' | 'namedChunkGroups'>>;
 
 export type MultiStats = StatsCompilation & Required<Pick<StatsCompilation, 'children'>>;
 

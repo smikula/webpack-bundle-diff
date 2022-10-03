@@ -7,6 +7,7 @@ import { validateGraph } from './validateGraph';
 import { processReasons } from './processReasons';
 import { Compilation, StatsModule, Module } from 'webpack';
 import { getModuleName } from '../../../util/getModuleName';
+import { isStatsModule } from '../../../util/typeGuards';
 
 export function deriveGraph(stats: Stats | Compilation, validate?: boolean): ModuleGraph {
     const moduleIdToNameMap = new ModuleIdToNameMap(stats);
@@ -33,35 +34,32 @@ export function processModule(
     compilation: Compilation | Stats
 ): void {
     const module = uncastModule as StatsModule | (Module & { modules?: Module[] });
-    const moduleIdentifier =
-        typeof module.identifier === 'string' ? module.identifier : module.identifier?.();
+    const moduleIdentifier = isStatsModule(module) ? module.identifier : module.identifier?.();
     // Modules marked as ignored don't get bundled, so we can ignore them too
     if (moduleIdentifier?.startsWith('ignored ')) {
         return;
     }
 
     const moduleName = getModuleName(module, compilation);
-    const moduleReasons =
-        'hasReasons' in module
-            ? [...(compilation as Compilation).moduleGraph.getIncomingConnections(module as Module)]
-                  .map(
-                      ({ dependency }) =>
-                          dependency && compilation.moduleGraph.getModule(dependency).identifier()
-                  )
-                  .filter(reason => !!reason)
-            : module.reasons;
+    const moduleReasons = !isStatsModule(module)
+        ? [...(compilation as Compilation).moduleGraph.getIncomingConnections(module as Module)]
+              .map(
+                  ({ dependency }) =>
+                      dependency && compilation.moduleGraph.getModule(dependency).identifier()
+              )
+              .filter(reason => !!reason)
+        : module.reasons;
 
     // Precalculate named chunk groups since they are the same for all submodules
-    const moduleChunks: (string | number | null)[] =
-        'hasReasons' in module
-            ? (compilation as Compilation).chunkGraph
-                  .getModuleChunks(module as Module)
-                  .map(chunk => chunk.id)
-            : module.chunks;
+    const moduleChunks: (string | number | null)[] = !isStatsModule(module)
+        ? (compilation as Compilation).chunkGraph
+              .getModuleChunks(module as Module)
+              .map(chunk => chunk.id)
+        : module.chunks;
     const namedChunkGroups = ncgLookup.getNamedChunkGroups(moduleChunks);
 
     if (!module.modules) {
-        const moduleSize = typeof module.size === 'number' ? module.size : module.size();
+        const moduleSize = isStatsModule(module) ? module.size : module.size();
         // This is just an individual module, so we can add it to the graph as-is
         addModuleToGraph(graph, {
             name: moduleName,
@@ -72,10 +70,9 @@ export function processModule(
     } else {
         // The module is the amalgamation of multiple scope hoisted modules, so we add each of
         // them individually.
-        const moduleSize =
-            typeof module.modules[0].size === 'number'
-                ? module.modules[0].size
-                : module.modules[0].size();
+        const moduleSize = isStatsModule(module.modules[0])
+            ? module.modules[0].size
+            : module.modules[0].size();
 
         // Assume the first hoisted module acts as the primary module
         addModuleToGraph(graph, {
@@ -90,8 +87,9 @@ export function processModule(
         for (let i = 1; i < module.modules.length; i++) {
             const hoistedModule = module.modules[i];
             const hoistedModuleName = getModuleName(hoistedModule, compilation);
-            const hoistedModuleSize =
-                typeof hoistedModule.size === 'number' ? hoistedModule.size : hoistedModule.size();
+            const hoistedModuleSize = isStatsModule(hoistedModule)
+                ? hoistedModule.size
+                : hoistedModule.size();
             addModuleToGraph(graph, {
                 name: hoistedModuleName,
                 parents: [moduleName],

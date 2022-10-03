@@ -2,13 +2,14 @@ import { Stats } from '../../types/Stats';
 import { ChunkGroupData } from '../../types/BundleData';
 import { DataOptions } from '../../types/DataOptions';
 import { Compilation } from 'webpack';
+import { isChunkGroup, isCompilation } from '../../util/typeGuards';
 
 export function deriveChunkGroupData(stats: Stats | Compilation, options: DataOptions) {
     const assetFilter = (options && options.assetFilter) || defaultAssetFilter;
     const chunkGroupData: ChunkGroupData = {};
 
     // Process each named chunk group
-    for (let chunkGroupName of stats.namedChunkGroups instanceof Map
+    for (let chunkGroupName of isCompilation(stats)
         ? stats.namedChunkGroups.keys()
         : Object.keys(stats.namedChunkGroups)) {
         const chunkGroup =
@@ -20,13 +21,12 @@ export function deriveChunkGroupData(stats: Stats | Compilation, options: DataOp
         let assets: string[] = [];
         let ignoredAssets: string[] = [];
 
-        const chunkGroupAssets =
-            'pushChunk' in chunkGroup
-                ? chunkGroup.getFiles().map((assetName: string) => ({
-                      name: assetName,
-                      size: (stats as Compilation).getAsset(assetName).info.size,
-                  }))
-                : chunkGroup.assets;
+        const chunkGroupAssets = isChunkGroup(chunkGroup)
+            ? chunkGroup.getFiles().map((assetName: string) => ({
+                  name: assetName,
+                  size: (stats as Compilation).getAsset(assetName).info.size,
+              }))
+            : chunkGroup.assets;
 
         // Process each asset in the chunk group
         for (let { name, size } of chunkGroupAssets) {
