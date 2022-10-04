@@ -1,10 +1,13 @@
 import { processModule } from '../../src/api/deriveBundleData/graph/deriveGraph';
+import { Stats } from '../../src/types/Stats';
 
 const moduleIdToNameMap: any = new Map([
     [1, 'module1'],
     [2, 'module2'],
     [3, 'module3'],
 ]);
+
+const stats: Stats = {} as Stats;
 
 const namedChunkGroupLookupMap: any = { getNamedChunkGroups: () => ['chunkGroup1'] };
 
@@ -15,7 +18,7 @@ describe('processModule', () => {
         const module: any = { identifier: 'ignored module1' };
 
         // Act
-        processModule(module, graph, moduleIdToNameMap, namedChunkGroupLookupMap);
+        processModule(module, graph, moduleIdToNameMap, namedChunkGroupLookupMap, stats);
 
         // Assert
         expect(graph).toEqual({});
@@ -34,7 +37,7 @@ describe('processModule', () => {
         };
 
         // Act
-        processModule(module, graph, moduleIdToNameMap, namedChunkGroupLookupMap);
+        processModule(module, graph, moduleIdToNameMap, namedChunkGroupLookupMap, stats);
 
         // Assert
         expect(graph[module.name]).toEqual({
@@ -60,7 +63,7 @@ describe('processModule', () => {
         };
 
         // Act
-        processModule(module, graph, moduleIdToNameMap, namedChunkGroupLookupMap);
+        processModule(module, graph, moduleIdToNameMap, namedChunkGroupLookupMap, stats);
 
         // Assert
         expect(graph['module1']).toEqual({
@@ -90,7 +93,7 @@ describe('processModule', () => {
         };
 
         // Act
-        processModule(module, graph, moduleIdToNameMap, namedChunkGroupLookupMap);
+        processModule(module, graph, moduleIdToNameMap, namedChunkGroupLookupMap, stats);
 
         // Assert
         expect(graph['module2']).toEqual({
@@ -117,7 +120,7 @@ describe('processModule', () => {
 
         // Act / Assert
         expect(() => {
-            processModule(module, graph, moduleIdToNameMap, namedChunkGroupLookupMap);
+            processModule(module, graph, moduleIdToNameMap, namedChunkGroupLookupMap, stats);
         }).toThrow();
     });
 });

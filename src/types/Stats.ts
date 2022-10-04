@@ -1,51 +1,30 @@
+import {
+    StatsAsset,
+    StatsChunk,
+    StatsChunkGroup,
+    StatsCompilation,
+    StatsModule,
+    StatsModuleReason,
+} from 'webpack';
+
 // A minimal subset of the stats.json schema
-export interface Stats {
-    assets: Asset[];
-    chunks: Chunk[];
-    modules: Module[];
-    namedChunkGroups: { [name: string]: NamedChunkGroup };
-    name?: string;
-}
+export type Stats = StatsCompilation &
+    Required<Pick<StatsCompilation, 'assets' | 'chunks' | 'modules' | 'namedChunkGroups'>>;
 
-export interface MultiStats {
-    children: Stats[];
-}
+export type MultiStats = StatsCompilation & Required<Pick<StatsCompilation, 'children'>>;
 
-export type RawStats = Stats | MultiStats;
+export type RawStats = StatsCompilation;
 
-export interface Asset {
-    name: string;
-    chunks: ChunkId[];
-    size: number;
-}
+export type Asset = StatsAsset;
 
-export interface Chunk {
-    id: ChunkId;
-    modules: Module[];
-}
+export type Chunk = StatsChunk;
 
-export interface Module {
-    chunks: ChunkId[];
-    id: string | number;
-    identifier: string;
-    modules?: Module[];
-    name: string;
-    reasons: Reason[];
-    size: number;
-}
+export type Module = StatsModule;
 
-export interface Reason {
-    moduleId: string | number;
-    moduleName: string;
-    type: string;
-    userRequest: string;
-}
+export type Reason = StatsModuleReason;
 
 export type ChunkAsset = Pick<Asset, 'name' | 'size'>;
 
-export interface NamedChunkGroup {
-    assets: ChunkAsset[];
-    chunks: ChunkId[];
-}
+export type NamedChunkGroup = StatsChunkGroup;
 
 export type ChunkId = number | string;

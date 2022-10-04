@@ -1,19 +1,22 @@
 import { ModuleGraph, ModuleGraphNode } from '../../../types/BundleData';
-import { Stats, Module } from '../../../types/Stats';
+import { Stats } from '../../../types/Stats';
 import { arrayUnion } from '../../../util/arrayUnion';
 import ModuleIdToNameMap from './ModuleIdToNameMap';
 import NamedChunkGroupLookupMap from '../NamedChunkGroupLookupMap';
 import { validateGraph } from './validateGraph';
 import { processReasons } from './processReasons';
+import { Compilation, StatsModule, Module } from 'webpack';
+import { getModuleName } from '../../../util/getModuleName';
+import { isModule } from '../../../util/typeGuards';
 
-export function deriveGraph(stats: Stats, validate?: boolean): ModuleGraph {
+export function deriveGraph(stats: Stats | Compilation, validate?: boolean): ModuleGraph {
     const moduleIdToNameMap = new ModuleIdToNameMap(stats);
     const ncgLookup = new NamedChunkGroupLookupMap(stats);
 
     let graph: ModuleGraph = {};
 
     for (let module of stats.modules) {
-        processModule(module, graph, moduleIdToNameMap, ncgLookup);
+        processModule(module, graph, moduleIdToNameMap, ncgLookup, stats);
     }
 
     if (validate) {
@@ -24,51 +27,76 @@ export function deriveGraph(stats: Stats, validate?: boolean): ModuleGraph {
 }
 
 export function processModule(
-    module: Module,
+    uncastModule: Module | StatsModule,
     graph: ModuleGraph,
     moduleIdToNameMap: ModuleIdToNameMap,
-    ncgLookup: NamedChunkGroupLookupMap
-) {
+    ncgLookup: NamedChunkGroupLookupMap,
+    compilation: Compilation | Stats
+): void {
+    const module = uncastModule as StatsModule | (Module & { modules?: Module[] });
+    const moduleIdentifier = !isModule(module) ? module.identifier : module.identifier?.();
     // Modules marked as ignored don't get bundled, so we can ignore them too
-    if (module.identifier.startsWith('ignored ')) {
+    if (moduleIdentifier?.startsWith('ignored ')) {
         return;
     }
 
+    const moduleName = getModuleName(module, compilation);
+    const moduleReasons = isModule(module)
+        ? [...(compilation as Compilation).moduleGraph.getIncomingConnections(module as Module)]
+              .map(
+                  ({ dependency }) =>
+                      dependency && compilation.moduleGraph.getModule(dependency).identifier()
+              )
+              .filter(reason => !!reason)
+        : module.reasons;
+
     // Precalculate named chunk groups since they are the same for all submodules
-    const namedChunkGroups = ncgLookup.getNamedChunkGroups(module.chunks);
+    const moduleChunks: (string | number | null)[] = isModule(module)
+        ? (compilation as Compilation).chunkGraph
+              .getModuleChunks(module as Module)
+              .map(chunk => chunk.id)
+        : module.chunks;
+    const namedChunkGroups = ncgLookup.getNamedChunkGroups(moduleChunks);
 
     if (!module.modules) {
+        const moduleSize = !isModule(module) ? module.size : module.size();
         // This is just an individual module, so we can add it to the graph as-is
         addModuleToGraph(graph, {
-            name: module.name,
+            name: moduleName,
             namedChunkGroups,
-            size: module.size,
-            ...processReasons(module.reasons, moduleIdToNameMap),
+            size: moduleSize,
+            ...processReasons(moduleReasons, moduleIdToNameMap),
         });
     } else {
         // The module is the amalgamation of multiple scope hoisted modules, so we add each of
         // them individually.
+        const moduleSize = !isModule(module.modules[0])
+            ? module.modules[0].size
+            : module.modules[0].size();
 
         // Assume the first hoisted module acts as the primary module
-        const primaryModule = module.modules[0];
         addModuleToGraph(graph, {
-            name: primaryModule.name,
+            name: getModuleName(module.modules[0], compilation),
             containsHoistedModules: true,
             namedChunkGroups,
-            size: primaryModule.size,
-            ...processReasons(module.reasons, moduleIdToNameMap),
+            size: moduleSize,
+            ...processReasons(moduleReasons, moduleIdToNameMap),
         });
 
         // Other hoisted modules are parented to the primary module
         for (let i = 1; i < module.modules.length; i++) {
             const hoistedModule = module.modules[i];
+            const hoistedModuleName = getModuleName(hoistedModule, compilation);
+            const hoistedModuleSize = !isModule(hoistedModule)
+                ? hoistedModule.size
+                : hoistedModule.size();
             addModuleToGraph(graph, {
-                name: hoistedModule.name,
-                parents: [primaryModule.name],
-                directParents: [primaryModule.name],
+                name: hoistedModuleName,
+                parents: [moduleName],
+                directParents: [moduleName],
                 lazyParents: [],
                 namedChunkGroups,
-                size: hoistedModule.size,
+                size: hoistedModuleSize,
             });
         }
     }
