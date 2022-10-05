@@ -40,7 +40,6 @@ export function processModule(
         return;
     }
 
-    const moduleName = getModuleName(module, compilation);
     const moduleReasons = isModule(module)
         ? [...(compilation as Compilation).moduleGraph.getIncomingConnections(module as Module)]
               .map(
@@ -59,6 +58,7 @@ export function processModule(
     const namedChunkGroups = ncgLookup.getNamedChunkGroups(moduleChunks);
 
     if (!module.modules) {
+        const moduleName = getModuleName(module, compilation);
         const moduleSize = !isModule(module) ? module.size : module.size();
         // This is just an individual module, so we can add it to the graph as-is
         addModuleToGraph(graph, {
@@ -74,9 +74,11 @@ export function processModule(
             ? module.modules[0].size
             : module.modules[0].size();
 
+        const moduleName = getModuleName(module.modules[0], compilation);
+
         // Assume the first hoisted module acts as the primary module
         addModuleToGraph(graph, {
-            name: getModuleName(module.modules[0], compilation),
+            name: moduleName,
             containsHoistedModules: true,
             namedChunkGroups,
             size: moduleSize,
