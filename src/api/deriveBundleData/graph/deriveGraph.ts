@@ -46,8 +46,8 @@ export function processModule(
               .map(({ dependency }) => {
                   const depModule: Module = compilation.moduleGraph.getModule(dependency);
                   return {
-                      moduleName: getModuleName(module, compilation),
-                      moduleId: depModule.id,
+                      moduleName: getModuleName(depModule, compilation),
+                      moduleId: (compilation as Compilation).chunkGraph.getModuleId(depModule),
                       type: dependency.type,
                   };
               })
