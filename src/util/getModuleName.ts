@@ -6,9 +6,8 @@ export function getModuleName(
     module: StatsOrComiplationModule,
     stats: Stats | Compilation
 ): string {
-    return 'readableIdentifier' in module
-        ? module.readableIdentifier((stats as Compilation).requestShortener)
-        : module.modules
-        ? module.modules[0].name
-        : module.name;
+    const rootModule = module.modules?.[0] ?? module;
+    return 'readableIdentifier' in rootModule
+        ? rootModule.readableIdentifier((stats as Compilation).requestShortener)
+        : rootModule.name;
 }
