@@ -1,7 +1,10 @@
 import { Reason } from '../../../types/Stats';
 import ModuleIdToNameMap from './ModuleIdToNameMap';
 
-export function processReasons(reasons: Reason[], moduleIdToNameMap: ModuleIdToNameMap) {
+export function processReasons(
+    reasons: Pick<Reason, 'moduleName' | 'moduleId' | 'type'>[],
+    moduleIdToNameMap: ModuleIdToNameMap
+) {
     const directParents = new Set<string>();
     const lazyParents = new Set<string>();
     let entryType: string | undefined = undefined;
