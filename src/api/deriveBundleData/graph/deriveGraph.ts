@@ -1,5 +1,5 @@
 import { ModuleGraph, ModuleGraphNode } from '../../../types/BundleData';
-import { Stats } from '../../../types/Stats';
+import { Reason, Stats } from '../../../types/Stats';
 import { arrayUnion } from '../../../util/arrayUnion';
 import ModuleIdToNameMap from './ModuleIdToNameMap';
 import NamedChunkGroupLookupMap from '../NamedChunkGroupLookupMap';
@@ -40,13 +40,17 @@ export function processModule(
         return;
     }
 
-    const moduleReasons = isModule(module)
+    const moduleReasons: Pick<Reason, 'moduleName' | 'moduleId' | 'type'>[] = isModule(module)
         ? [...(compilation as Compilation).moduleGraph.getIncomingConnections(module as Module)]
-              .map(
-                  ({ dependency }) =>
-                      dependency && compilation.moduleGraph.getModule(dependency).identifier()
-              )
-              .filter(reason => !!reason)
+              .filter(({ dependency }) => !!dependency)
+              .map(({ dependency }) => {
+                  const depModule: Module = compilation.moduleGraph.getModule(dependency);
+                  return {
+                      moduleName: getModuleName(module, compilation),
+                      moduleId: depModule.id,
+                      type: dependency.type,
+                  };
+              })
         : module.reasons;
 
     // Precalculate named chunk groups since they are the same for all submodules
