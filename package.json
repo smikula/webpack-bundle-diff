@@ -1,6 +1,6 @@
 {
     "name": "webpack-bundle-diff",
-    "version": "1.2.3",
+    "version": "1.2.4",
     "description": "Understand changes in webpack bundle size",
     "main": "./lib/index.js",
     "typings": "./lib/index.d.ts",
