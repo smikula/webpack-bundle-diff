@@ -19,6 +19,9 @@ export function processReasons(
 
             // There is no parent module in this case, so just move on
             continue;
+        } else if (!reason.moduleId && !reason.moduleName) {
+            // Some reasons are introduced by loaders and don't indicate a parent module
+            continue;
         }
 
         // If moduleId is present, use that to look up the module name.  (The moduleName
