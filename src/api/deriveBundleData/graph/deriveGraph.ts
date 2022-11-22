@@ -31,7 +31,7 @@ export function processModule(
     graph: ModuleGraph,
     moduleIdToNameMap: ModuleIdToNameMap,
     ncgLookup: NamedChunkGroupLookupMap,
-    compilation: Compilation | Stats
+    compilationOrStats: Compilation | Stats
 ): void {
     const module = uncastModule as StatsModule | (Module & { modules?: Module[] });
     const moduleIdentifier = !isModule(module) ? module.identifier : module.identifier?.();
@@ -40,14 +40,15 @@ export function processModule(
         return;
     }
 
+    const compilation = compilationOrStats as Compilation;
     const moduleReasons: Pick<Reason, 'moduleName' | 'moduleId' | 'type'>[] = isModule(module)
-        ? [...(compilation as Compilation).moduleGraph.getIncomingConnections(module as Module)]
+        ? [...compilation.moduleGraph.getIncomingConnections(module as Module)]
               .filter(({ dependency }) => !!dependency)
               .map(({ dependency }) => {
-                  const depModule: Module = compilation.moduleGraph.getModule(dependency);
+                  const parentModule = compilation.moduleGraph.getParentModule(dependency);
                   return {
-                      moduleName: getModuleName(depModule, compilation),
-                      moduleId: (compilation as Compilation).chunkGraph.getModuleId(depModule),
+                      moduleName: parentModule && getModuleName(parentModule, compilation),
+                      moduleId: parentModule && compilation.chunkGraph.getModuleId(parentModule),
                       type: dependency.type,
                   };
               })
@@ -55,14 +56,12 @@ export function processModule(
 
     // Precalculate named chunk groups since they are the same for all submodules
     const moduleChunks: (string | number | null)[] = isModule(module)
-        ? (compilation as Compilation).chunkGraph
-              .getModuleChunks(module as Module)
-              .map(chunk => chunk.id)
+        ? compilation.chunkGraph.getModuleChunks(module as Module).map(chunk => chunk.id)
         : module.chunks;
     const namedChunkGroups = ncgLookup.getNamedChunkGroups(moduleChunks);
 
     if (!module.modules) {
-        const moduleName = getModuleName(module, compilation);
+        const moduleName = getModuleName(module, compilationOrStats);
         const moduleSize = !isModule(module) ? module.size : module.size();
         // This is just an individual module, so we can add it to the graph as-is
         addModuleToGraph(graph, {
@@ -78,7 +77,7 @@ export function processModule(
             ? module.modules[0].size
             : module.modules[0].size();
 
-        const moduleName = getModuleName(module.modules[0], compilation);
+        const moduleName = getModuleName(module.modules[0], compilationOrStats);
 
         // Assume the first hoisted module acts as the primary module
         addModuleToGraph(graph, {
@@ -92,7 +91,7 @@ export function processModule(
         // Other hoisted modules are parented to the primary module
         for (let i = 1; i < module.modules.length; i++) {
             const hoistedModule = module.modules[i];
-            const hoistedModuleName = getModuleName(hoistedModule, compilation);
+            const hoistedModuleName = getModuleName(hoistedModule, compilationOrStats);
             const hoistedModuleSize = !isModule(hoistedModule)
                 ? hoistedModule.size
                 : hoistedModule.size();
