@@ -111,6 +111,8 @@ function addModuleToGraph(graph: ModuleGraph, moduleNode: ModuleGraphNode) {
     if (graph[moduleNode.name]) {
         const graphNode = graph[moduleNode.name];
         graphNode.parents = arrayUnion(graphNode.parents, moduleNode.parents);
+        graphNode.directParents = arrayUnion(graphNode.directParents, moduleNode.directParents);
+        graphNode.lazyParents = arrayUnion(graphNode.lazyParents, moduleNode.lazyParents);
         graphNode.namedChunkGroups = arrayUnion(
             graphNode.namedChunkGroups,
             moduleNode.namedChunkGroups
