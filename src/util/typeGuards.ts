@@ -11,7 +11,7 @@ import {
 export function isStatsCompilation(
     stats: StatsCompilation | Stats | MultiStats
 ): stats is StatsCompilation {
-    return 'children' in stats;
+    return 'children' in stats && stats.children.length > 0;
 }
 
 export function isMultiStats(stats: StatsCompilation | Stats | MultiStats): stats is MultiStats {
